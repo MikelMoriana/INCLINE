@@ -71,7 +71,8 @@ species_dictionary <- read_delim("data\\INCLINE_species_taxonomic_name.csv")
 community_data <- community_data_with_lav_3_6_2021 |>
   rename(Cer_Sag_cf = "Cer/sag_cf", Cer_sp = "Cer _sp", Nid_seedling = "Nid seedling", block = Block, measure = Measure, site = Site, treatment = Treatment, weather = Weather, vegetation_cover = Veg_cover, vegetation_height_mm = Veg_height_mm, moss_depth_mm = Moss_depth_mm)|> #Changed wrong types and capital letters to small letters.
   mutate(site = replace_na(site, "Ulvehaugen")) |> 
-  mutate(plotID = paste0(str_sub(site, 1,3), "_", block, "_", plot))|> #Making a new column called plotID
+  mutate(plotID = paste0(str_sub(site, 1,3), "_", block, "_", plot)) |> #Making a new column called plotID
+  filter(plotID != "Lav_7_6") |> #This plot does not exist, and there are no other missing plots, so it does not seem to belong anywhere else. so I remove it
   select(-treatment)|> #Removing unnecessary columns
   mutate(block = as.numeric(block, na.rm = TRUE))|>
   mutate(plot = as.numeric(plot, na.rm = TRUE))|>
