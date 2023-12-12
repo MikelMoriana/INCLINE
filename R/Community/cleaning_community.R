@@ -18,6 +18,12 @@ get_file(node = "zhk3m",
          path = "data",
          remote_path = "RawData/Community")
 
+#Community data for Lavisdalen Block 3 plot 6 in 2021, since this is empty in INCLINE_community_2018_2019_2021_2022_2023.csv
+get_file(node = "zhk3m",
+         file = "INCLINE_community_2021_Lavisdalen_3_6.csv",
+         path = "data",
+         remote_path = "RawData/Community")
+
 #Meta data
 get_file(node = "zhk3m",
          file = "INCLINE_metadata.csv",
@@ -40,6 +46,12 @@ get_file(node = "zhk3m",
 ##### Reading in data #####
 #Community data
 community_data_download <- read_delim("data\\INCLINE_community_2018_2019_2021_2022_2023.csv", col_types = cols(.default = col_character()))
+
+#Community data including Lavisdalen_3_6_2021
+lavisdalen_3_6_2021 <- read_delim("data\\INCLINE_community_2021_Lavisdalen_3_6.csv", col_types = cols(.default = col_character()))
+community_data_lav_3_6_2021 <- filter(community_data_download, Site == "Lavisdalen" & Block == 3 & plot == 6 & year == 2021)
+community_data_without_lav_3_6_2021 <- anti_join(community_data_download, community_data_lav_3_6_2021)
+community_data_with_lav_3_6_2021 <- bind_rows(community_data_without_lav_3_6_2021, lavisdalen_3_6_2021)
 
 #Meta data
 meta_data_download <- read_delim("data\\INCLINE_metadata.csv") #Need the meta data to fill in the missing part of the treatment and OTC column for 2018.
