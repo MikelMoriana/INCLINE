@@ -68,8 +68,9 @@ species_dictionary <- read_delim("data\\INCLINE_species_taxonomic_name.csv")
 #For it to be easier to work with the data, all the names will be standardized after the same rules.The general rule will be capital letter on the specie name with an underscore to the surname and an underscore to cf if they have a cf at the end. All columns that have a name with space, gets a underscore instead for space. All other names that aren't species gets small letters instead of capital letters. By renaming the columns we don't need to think of their unique names when working with the data. Also fixed general mistakes like making the columns numeric, or to data after what it should be.
 
 #community data
-community_data <- community_data_download |>
-  rename(Cer_Sag_cf = "Cer/sag_cf", Cer_sp = "Cer _sp", Nid_seedling = "Nid seedling", block = Block, measure = Measure, site = Site, treatment = Treatment, weather = Weather, vegetation_cover = Veg_cover, vegetation_height_mm = Veg_height_mm, moss_depth_mm = Moss_depth_mm)|> #Changed wrong types and capital letters to small letters. 
+community_data <- community_data_with_lav_3_6_2021 |>
+  rename(Cer_Sag_cf = "Cer/sag_cf", Cer_sp = "Cer _sp", Nid_seedling = "Nid seedling", block = Block, measure = Measure, site = Site, treatment = Treatment, weather = Weather, vegetation_cover = Veg_cover, vegetation_height_mm = Veg_height_mm, moss_depth_mm = Moss_depth_mm)|> #Changed wrong types and capital letters to small letters.
+  mutate(site = replace_na(site, "Ulvehaugen")) |> 
   mutate(plotID = paste0(str_sub(site, 1,3), "_", block, "_", plot))|> #Making a new column called plotID
   select(-treatment)|> #Removing unnecessary columns
   mutate(block = as.numeric(block, na.rm = TRUE))|>
