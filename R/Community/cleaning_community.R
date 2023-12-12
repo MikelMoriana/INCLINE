@@ -1603,7 +1603,7 @@ community_clean_plotlevel_info <- community_clean |>
   unique() |>
   pivot_longer(cols = vegetation_cover:moss_depth_mean, names_to = "name", values_to = "value")
 
-
+dir.create("data_cleaned")
 write.csv(community_clean_species_cover, file = "data_cleaned/INCLINE_community_species_cover.csv", row.names= FALSE)
 
 write.csv(community_clean_subplot, file = "data_cleaned/INCLINE_community_subplot.csv", row.names= FALSE)
