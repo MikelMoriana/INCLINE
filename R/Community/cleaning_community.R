@@ -73,6 +73,72 @@ community_data <- community_data_with_lav_3_6_2021 |>
   mutate(site = replace_na(site, "Ulvehaugen")) |> 
   mutate(plotID = paste0(str_sub(site, 1,3), "_", block, "_", plot)) |> #Making a new column called plotID
   filter(plotID != "Lav_7_6") |> #This plot does not exist, and there are no other missing plots, so it does not seem to belong anywhere else. so I remove it
+  mutate(vegetation_height_mm = replace(
+    vegetation_height_mm,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 10,
+    47
+  )) |> # Lav_4_6 2018 appears twice in the data, with some mistakes. I correct the mistakes first, and then I remove the duplicate
+  mutate(moss_depth_mm = replace(
+    moss_depth_mm,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 10,
+    30
+  )) |>
+  mutate(vegetation_height_mm = replace(
+    vegetation_height_mm,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 12,
+    53
+  )) |>
+  mutate(moss_depth_mm = replace(
+    moss_depth_mm,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 12,
+    63
+  )) |>
+  mutate(vegetation_height_mm = replace(
+    vegetation_height_mm,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 24,
+    44
+  )) |>
+  mutate(moss_depth_mm = replace(
+    moss_depth_mm,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 24,
+    46
+  )) |>
+  mutate(vegetation_height_mm = replace(
+    vegetation_height_mm,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 26,
+    38
+  )) |>
+  mutate(moss_depth_mm = replace(
+    moss_depth_mm,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 26,
+    37
+  )) |>
+  mutate(Sib_pro = replace(
+    Sib_pro,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 17,
+    "1S"
+  )) |>
+  mutate(Sib_pro = replace(
+    Sib_pro,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 18,
+    "1S"
+  )) |>
+  mutate(Bis_viv = replace(
+    Bis_viv,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 21,
+    1
+  )) |>
+  mutate(Tar_sp = replace(
+    Bis_viv,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == 35,
+    0
+  )) |>
+  mutate(Tar_sp = replace(
+    Tar_sp,
+    plotID == "Lav_4_6" & year == 2018 & subPlot == "cover",
+    3
+  )) |>
+  distinct() |> 
   select(-treatment)|> #Removing unnecessary columns
   mutate(block = as.numeric(block, na.rm = TRUE))|>
   mutate(plot = as.numeric(plot, na.rm = TRUE))|>
