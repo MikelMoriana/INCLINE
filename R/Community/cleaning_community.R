@@ -32,7 +32,7 @@ get_file(node = "zhk3m",
 
 #Name dictionary
 get_file(node = "zhk3m",
-         file = "INCLINE_community_name_dictionary.csv",
+         file = "INCLINE_community_name_dictionary_20231204.csv",
          path = "data",
          remote_path = "RawData/Community")
 
@@ -57,7 +57,7 @@ community_data_with_lav_3_6_2021 <- bind_rows(community_data_without_lav_3_6_202
 meta_data_download <- read_delim("data\\INCLINE_metadata.csv") #Need the meta data to fill in the missing part of the treatment and OTC column for 2018.
 
 #Name dictionary
-name_dictionary <- read_delim("data\\INCLINE_community_name_dictionary.csv")
+name_dictionary <- read_delim("data\\INCLINE_community_name_dictionary_20231204.csv")
 
 #Species name dictionary
 species_dictionary <- read_delim("data\\INCLINE_species_taxonomic_name.csv")
@@ -1603,7 +1603,7 @@ community_clean_plotlevel_info <- community_clean |>
   unique() |>
   pivot_longer(cols = vegetation_cover:moss_depth_mean, names_to = "name", values_to = "value")
 
-dir.create("data_cleaned")
+ifelse(!dir.exists("data_cleaned"), dir.create("data_cleaned"), FALSE)
 write.csv(community_clean_species_cover, file = "data_cleaned/INCLINE_community_species_cover_fixed.csv", row.names= FALSE)
 
 write.csv(community_clean_subplot, file = "data_cleaned/INCLINE_community_subplot_fixed.csv", row.names= FALSE)
