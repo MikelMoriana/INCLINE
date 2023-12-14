@@ -1480,6 +1480,8 @@ community_clean <- community_clean|>
 #Such as when we changed one species to another, but it was already registered in that subplot, etc.
 
 community_clean <- community_clean |> unique()
+community_clean <- community_clean |> 
+  filter(!(plotID == "Lav_2_6" & year == 2021 & subPlot == 29 & species == "Sal_her" & value == 1)) #In this subplot Vac_myr was changed for Sal_her. But Sal_her was dominant (D) in this subplot, and the lines therefore not exact duplicates
 
 
 ##### Adding information about total % of different functional groups #####
