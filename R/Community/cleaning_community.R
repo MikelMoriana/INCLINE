@@ -204,6 +204,7 @@ community_data_longer <- community_data_longer |>
     juvenile = str_detect(value, "(?i)[j]"),
     seedling = str_detect(value, "(?i)[s]")
   )|>
+  mutate(fertile = ifelse(grepl("cf", value), FALSE, fertile)) |> # In some cases the cf status was registered as value, not as a suffix of the species. These were not fertile
   mutate(dominance = case_when(dominance == "TRUE" ~ value)) |> #In theory Sibbaldia procumbens (Sib_pro) and Veronica alpina (Ver_alp) should have registered dominance in all plots at Skjellingahaugen every year. Which means that 1 = 0-25% cover in the subplot, 2 = 25-50%, 3 = 50-75% and 4 = 75-100%. So with this coding we are missing out on the 0-25% information for those species. However, the problem is that I can't be sure if people used 1 as a dominance or a cover value. For plots where there are 2, 3 and 4s we know that 1s means dominance. Could be coded in somehow.
   mutate(presence = case_when(presence == "TRUE" ~ 1)) 
 
