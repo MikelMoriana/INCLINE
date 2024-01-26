@@ -49,8 +49,8 @@ community_data_download <- read_delim("data\\INCLINE_community_2018_2019_2021_20
 
 #Community data including Lavisdalen_3_6_2021
 lavisdalen_3_6_2021 <- read_delim("data\\INCLINE_community_2021_Lavisdalen_3_6.csv", col_types = cols(.default = col_character()))
-community_data_lav_3_6_2021 <- filter(community_data_download, Site == "Lavisdalen" & Block == 3 & plot == 6 & year == 2021)
-community_data_without_lav_3_6_2021 <- anti_join(community_data_download, community_data_lav_3_6_2021)
+community_data_without_lav_3_6_2021 <- community_data_download |> 
+  filter(!(Site == "Lavisdalen" & Block == 3 & plot == 6 & year == 2021))
 community_data_with_lav_3_6_2021 <- bind_rows(community_data_without_lav_3_6_2021, lavisdalen_3_6_2021)
 
 #Meta data
@@ -167,7 +167,7 @@ community_data <- community_data_with_lav_3_6_2021 |>
   mutate(date = ifelse(date == "30.07.2021/02.08.2021", "30.07.2021", date)) |>
   mutate(date = dmy(date))
 
-#There is a warming message that fungus does not only have numerics in them. I checked it, it has an "O", I checked the data, it is not supposed to have anything. So that the code changes this to NA is fine.
+#There is a warning message that fungus does not only have numerics in them. I checked it, it has an "O", I checked the data, it is not supposed to have anything. So that the code changes this to NA is fine.
 
 #meta data
 meta_data <- meta_data_download|>
