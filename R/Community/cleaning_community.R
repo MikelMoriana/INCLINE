@@ -140,7 +140,6 @@ community_data <- community_data_with_lav_3_6_2021 |>
   )) |>
   distinct() |> 
   select(-treatment)|> #Removing unnecessary columns
-  mutate(subPlot = as.numeric(subPlot, na.rm = TRUE)) |> # Need numeric for the turfmapper
   mutate(block = as.numeric(block, na.rm = TRUE))|>
   mutate(plot = as.numeric(plot, na.rm = TRUE))|>
   mutate(year = as.numeric(year, na.rm = TRUE))|>
@@ -176,7 +175,7 @@ meta_data <- meta_data_download|>
 
 #__________Combining community data and meta data and translating names__________#
 
-community_data <- community_data |>
+community_data_metadata <- community_data |>
   left_join(meta_data, by = "plotID") |>
   rename(warming = OTC) |>
   left_join(name_dictionary, by = c("recorder" = "initials"))|>
@@ -191,13 +190,13 @@ community_data <- community_data |>
 # To continuing cleaning the large dataset, we do a visual inspection first using the turfmapper package made by Richard Telfors available on github. The turfmapper plotting code can be found in the community_turfmapper.R script
 
 #Making data ready for turfmapper by widening the data
-community_data_longer <- community_data |>
+community_data_longer <- community_data_metadata |>
   pivot_longer(Ach_mil:Nid_seedling, values_drop_na = TRUE)|> #Check which species is the first and the last and use these instead of Ach_mil and Nid_seedling.
   rename(species = name)|>
   unique()
 
 #Making new variables were different signs in the dataset gives the same value based on which category it goes under. 
-community_data_longer <- community_data_longer |>
+community_data_longer_status <- community_data_longer |>
   mutate(
     presence = str_detect(value, "(?i)[1234odsjf]"),
     fertile = str_detect(value, "(?i)[f]"),
@@ -211,7 +210,7 @@ community_data_longer <- community_data_longer |>
 
 #_______ Making columns that need to be merged in to the dataset _______#
 #Making a new variable called cover
-cover_column <- community_data_longer|>
+cover_column <- community_data_longer_status|>
   filter(measure == "cover" )|>
   select(block, plot, site, plotID, year, species, value) |>
   rename(cover = value)|>
@@ -225,13 +224,13 @@ cover_column <- community_data_longer|>
   mutate(cover = ifelse(cover == "1+1*", 1, cover)) |> #Two Car_sp in this plot. Should be 1 for each of them
   mutate(cover = as.integer(cover))
 
-vegetation_cover_column <-community_data_longer|> 
+vegetation_cover_column <-community_data_longer_status|> 
   select(plotID, year, vegetation_cover) |> 
   filter(!is.na(vegetation_cover)) |>
   unique()
 
 #Combining the new column "cover" and the elongated community data. Dataset with presence absence data.
-community_clean <- community_data_longer |>
+community_clean <- community_data_longer_status |>
   left_join(cover_column, by = c("plot", "block", "site", "plotID", "year", "species"))|>
   select(-vegetation_cover)|>
   left_join(vegetation_cover_column, by = c("plotID", "year"))|>
@@ -251,7 +250,7 @@ community_clean <- community_data_longer |>
 #Several typing mistakes occurred when making the dataset. Therefore, we standardise again the rest of typing mistakes for the different species so its easier to work on when cleaning the data.
 #General coding for all plots
 #A couple of reason for renaming here. 1) misspellings or several names in the dataset that we combine to the name we want to use (Ant_sp, Epi_sp, Jun_sp, Ran_sp, Hyp_sel, Gen_ama), 2) species that some recorders misidentify (Eup_wet, Vio_can, Emp_nig, Sel_sel), 3) Old taxonomic names that not everyone has caught up on (Lys_eur).
-community_clean <- community_clean |>
+community_clean_species <- community_clean |>
   mutate(species = ifelse(species == "Tri_eur", "Lys_eur", species))|>
   mutate(species = ifelse (species == "Antennaria_sp", "Ant_sp", species))|>
   mutate(species = ifelse (species == "Epilobium_sp", "Epi_sp", species))|>
@@ -284,7 +283,7 @@ community_clean <- community_clean |>
 Skj_1_1_Agr_mer_2019_fix <- community_clean |> 
   filter(plotID == "Skj_1_1", species == "Agr_mer", year == "2018") |> 
   mutate(year = 2019,
-         date = "2019-08-13",
+         date = as.Date("2019-08-13"),
          weather = "rainy",
          moss = ifelse(subPlot == 2, 30, 
                        ifelse(subPlot == 7, 25, 
@@ -323,7 +322,7 @@ Skj_1_1_Agr_mer_2022_fix <- community_clean |>
   filter(plotID == "Skj_1_1", species == "Agr_mer", year == "2021") |> 
   filter(!subPlot %in% c(1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 22, 28, 29, 30, 31, 32, 33, 34, 35)) |> #Remove the subplots they didn't survey in 2022
   mutate(year = 2022,
-         date = "2022-08-09",
+         date = as.Date("2022-08-09"),
          weather = "cloudy",
          moss = ifelse(subPlot == 10, 30, 
                        ifelse(subPlot == 12, 5, 
@@ -357,7 +356,7 @@ Skj_1_1_Agr_mer_2022_fix <- community_clean |>
 Skj_1_3_Agr_mer_2019_fix <- community_clean |> 
   filter(plotID == "Skj_1_3", species == "Agr_mer", year == "2018") |> 
   mutate(year = 2019,
-         date = "2019-08-13",
+         date = as.Date("2019-08-13"),
          weather = "rainy",
          moss = ifelse(subPlot == 1, 45, 
                        ifelse(subPlot == 8, 50, 
@@ -392,7 +391,7 @@ Skj_1_3_Agr_mer_2022_fix <- community_clean |>
   filter(plotID == "Skj_1_3", species == "Agr_mer", year == "2021") |> 
   filter(!subPlot %in% c(1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 22, 28, 29, 30, 31, 32, 33, 34, 35)) |> #Remove the subplots they didn't survey in 2022
   mutate(year = 2022,
-         date = "2022-08-09",
+         date = as.Date("2022-08-09"),
          weather = "cloudy",
          moss = ifelse(subPlot == 10, 2, 
                        ifelse(subPlot == 24, 3, 
@@ -422,7 +421,7 @@ Skj_1_3_Agr_mer_2022_fix <- community_clean |>
 Skj_1_5_Agr_mer_2019_fix <- community_clean |> 
   filter(plotID == "Skj_1_5", species == "Agr_mer", year == "2018") |> 
   mutate(year = 2019,
-         date = "2019-08-14",
+         date = as.Date("2019-08-14"),
          weather = "cloudy",
          moss = ifelse(subPlot == 4, 20, 
                        ifelse(subPlot == 8, 25, 
@@ -462,7 +461,7 @@ Skj_1_5_Agr_mer_2022_fix <- community_clean |>
   filter(plotID == "Skj_1_5", species == "Agr_mer", year == "2021") |> 
   filter(!subPlot %in% c(1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 22, 28, 29, 30, 31, 32, 33, 34, 35)) |> #Remove the subplots they didn't survey in 2022
   mutate(year = 2022,
-         date = "2022-08-09",
+         date = as.Date("2022-08-09"),
          weather = "cloudy",
          moss = 5,
          lichen = NA,
@@ -484,7 +483,7 @@ Skj_1_5_Agr_mer_2022_fix <- community_clean |>
 Skj_5_1_Agr_mer_2019_fix <- community_clean |> 
   filter(plotID == "Skj_5_1", species == "Agr_mer", year == "2018") |> 
   mutate(year = 2019,
-         date = "2019-08-08",
+         date = as.Date("2019-08-08"),
          weather = "overcast/sunny",
          moss = ifelse(subPlot == 2, 5, 
                    ifelse(subPlot == 3, 5, 
@@ -547,7 +546,7 @@ Skj_5_1_Agr_mer_2022_fix <- community_clean |>
   filter(plotID == "Skj_5_1", species == "Agr_mer", year == "2021") |> 
   filter(!subPlot %in% c(1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 22, 28, 29, 30, 31, 32, 33, 34, 35)) |> #Remove the subplots they didn't survey in 2022
   mutate(year = 2022,
-         date = "2022-08-10",
+         date = as.Date("2022-08-10"),
          weather = "cloudy",
          moss = ifelse(subPlot == 10, 3,
                        ifelse(subPlot == 17, 15,
@@ -581,7 +580,7 @@ Skj_5_1_Agr_mer_2022_fix <- community_clean |>
 Skj_5_2_Agr_mer_2019_fix <- community_clean |> 
   filter(plotID == "Skj_5_2", species == "Agr_mer", year == "2018") |> 
   mutate(year = 2019,
-         date = "2019-08-07",
+         date = as.Date("2019-08-07"),
          weather = "rain",
          moss = ifelse(subPlot == 19, 7,
                        ifelse(subPlot == 26, 15,
@@ -608,7 +607,7 @@ Skj_5_2_Agr_mer_2022_fix <- community_clean |>
   filter(plotID == "Skj_5_2", species == "Agr_mer", year == "2021") |> 
   filter(!subPlot %in% c(1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 22, 28, 29, 30, 31, 32, 33, 34, 35)) |> #Remove the subplots they didn't survey in 2022
   mutate(year = 2022,
-         date = "2022-08-09",
+         date = as.Date("2022-08-09"),
          weather = "cloudy",
          moss = ifelse(subPlot == 17, 5,
                        ifelse(subPlot == 18, 15,
@@ -640,7 +639,7 @@ Skj_5_2_Agr_mer_2022_fix <- community_clean |>
 Skj_5_3_Agr_mer_2019_fix <- community_clean |> 
   filter(plotID == "Skj_5_3", species == "Agr_mer", year == "2018") |> 
   mutate(year = 2019,
-         date = "2019-08-08",
+         date = as.Date("2019-08-08"),
          weather = "rain",
          moss = ifelse(subPlot == 12, 5,
                        ifelse(subPlot == 14, 5,
@@ -690,7 +689,7 @@ Skj_5_3_Agr_mer_2022_fix <- community_clean |>
   filter(plotID == "Skj_5_3", species == "Agr_mer", year == "2021") |> 
   filter(!subPlot %in% c(1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 22, 28, 29, 30, 31, 32, 33, 34, 35)) |> #Remove the subplots they didn't survey in 2022
   mutate(year = 2022,
-         date = "2022-08-09",
+         date = as.Date("2022-08-09"),
          weather = "cloudy",
          moss = ifelse(subPlot == 19, 20,
                        ifelse(subPlot == 20, 3,
@@ -720,7 +719,7 @@ Skj_5_3_Agr_mer_2022_fix <- community_clean |>
 Skj_5_4_Agr_mer_2019_fix <- community_clean |> 
   filter(plotID == "Skj_5_4", species == "Agr_mer", year == "2018") |> 
   mutate(year = 2019,
-         date = "2019-08-09",
+         date = as.Date("2019-08-09"),
          weather = "overcast/sunny",
          moss = ifelse(subPlot == 3, 2,
                        ifelse(subPlot == 14, 35,
@@ -754,7 +753,7 @@ Skj_5_4_Agr_mer_2022_fix <- community_clean |>
   filter(plotID == "Skj_5_4", species == "Agr_mer", year == "2021") |> 
   filter(!subPlot %in% c(1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 22, 28, 29, 30, 31, 32, 33, 34, 35)) |> #Remove the subplots they didn't survey in 2022
   mutate(year = 2022,
-         date = "2022-08-10",
+         date = as.Date("2022-08-10"),
          weather = "cloudy",
          moss = ifelse(subPlot == 24, 30,
                        ifelse(subPlot == 26, 10, NA)),
@@ -780,7 +779,7 @@ Skj_5_4_Agr_mer_2022_fix <- community_clean |>
 Skj_5_5_Agr_mer_2019_fix <- community_clean |> 
   filter(plotID == "Skj_5_5", species == "Agr_mer", year == "2018") |> 
   mutate(year = 2019,
-         date = "2018-08-09",
+         date = as.Date("2018-08-09"),
          weather = "overcast/sunny",
          moss = ifelse(subPlot == 3, 3,
                        ifelse(subPlot == 4, 10,
@@ -821,7 +820,7 @@ Skj_5_5_Agr_mer_2019_fix <- community_clean |>
 Skj_5_6_Agr_mer_2019_fix <- community_clean |> 
   filter(plotID == "Skj_5_6", species == "Agr_mer", year == "2018") |> 
   mutate(year = 2019,
-         date = "2018-08-09",
+         date = as.Date("2018-08-09"),
          weather = "overcast/sunny",
          moss = ifelse(subPlot == 4, 3,
                       ifelse(subPlot == 6, 1,
@@ -877,7 +876,7 @@ Skj_5_6_Agr_mer_2022_fix <- community_clean |>
   filter(plotID == "Skj_5_6", species == "Agr_mer", year == "2021") |> 
   filter(!subPlot %in% c(1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 22, 28, 29, 30, 31, 32, 33, 34, 35)) |> #Remove the subplots they didn't survey in 2022
   mutate(year = 2022,
-         date = "2022-08-10",
+         date = as.Date("2022-08-10"),
          weather = "cloudy",
          moss = ifelse(subPlot == 16, 15,
                        ifelse(subPlot == 17, 10,
@@ -904,7 +903,7 @@ Skj_5_6_Agr_mer_2022_fix <- community_clean |>
          writer = "Joachim Topper",
          vegetation_cover = 80)
 
-community_clean <- community_clean |> 
+community_clean_skj <- community_clean_species |> 
   bind_rows(Skj_1_1_Agr_mer_2019_fix) |> #Add information of Agr_mer from previous year to 2019
   bind_rows(Skj_1_1_Agr_mer_2022_fix) |> #Add information of Agr_mer from previous year to 2022
   mutate(species = ifelse(species %in% c("Car_big_cf", "Car_sp") & plotID == "Skj_1_1" & year %in% c(2021, 2022), "Car_big", species))|>
@@ -1026,14 +1025,14 @@ community_clean <- community_clean |>
   bind_rows(Skj_5_3_Agr_mer_2022_fix) |> #Add information of Agr_mer from previous year to 2022
   mutate(species = ifelse(species == "Leu_aut_cf" & plotID == "Skj_5_3" & year == 2022, "Leo_aut", species))|>
   bind_rows(Skj_5_4_Agr_mer_2019_fix) |> #Add information of Agr_mer from previous year to 2019
-  mutate(date = ifelse(plotID == "Skj_5_4" & year == 2019, "2019-08-09", date)) |> #Wrong date in the file
+  mutate(date = if_else(plotID == "Skj_5_4" & year == 2019, as.Date("2019-08-09"), date)) |> #Wrong date in the file
   mutate(moss = ifelse(plotID == "Skj_5_4" & year == 2019 & subPlot == 35, 10, moss)) |> #Missing in the file
   bind_rows(Skj_5_4_Agr_mer_2022_fix) |> #Add information of Agr_mer from previous year to 2022
   mutate(species = ifelse(species == "Car_pal" & plotID == "Skj_5_4" & year == 2022, "Car_pil", species))|>
   mutate(cover = ifelse(species == "Alc_sp" & plotID == "Skj_5_4" & year == 2021, 1, cover))|>
   mutate(cover = ifelse(species == "Ave_fle" & plotID == "Skj_5_4" & year == 2019, 1, cover))|>
   bind_rows(Skj_5_5_Agr_mer_2019_fix) |> #Add information of Agr_mer from previous year to 2019
-  mutate(date = ifelse(plotID == "Skj_5_5" & year == 2019, "2019-08-09", date)) |> #Wrong date in the file
+  mutate(date = if_else(plotID == "Skj_5_5" & year == 2019, as.Date("2019-08-09"), date)) |> #Wrong date in the file
   mutate(species = ifelse(species %in% c("Agr_mer_CF") & plotID == "Skj_5_5", "Agr_mer", species))|> 
   mutate(cover = ifelse(species == "Agr_mer" & plotID == "Skj_5_5" & year == 2018, 2, cover))|>
   mutate(species = ifelse(species == "Hie_sp" & plotID == "Skj_5_5" & year == 2022, "Hie_pil", species))|>
@@ -1076,51 +1075,89 @@ community_clean <- community_clean |>
 
 ### Make data to impute for missing data in some years based on previous years
 
-Gud_4_1_Car_fla_fix <- community_clean |> 
+Gud_4_1_Car_fla_fix <- community_clean_skj |> 
   filter(plotID == "Gud_4_1", species == "Car_fla", year == "2019") |> 
   mutate(year = 2018,
-         date = NA,
-         weather = NA,
-         moss = NA,
+         date = as.Date("2018-08-07"),
+         weather = "sunny",
+         moss = ifelse(subPlot == 4, 1, 
+                       ifelse(subPlot == 8, 5, 
+                              ifelse(subPlot == 12, 5, 
+                                     ifelse(subPlot == 14, 5,
+                                            ifelse(subPlot == 18, 5, 
+                                                   ifelse(subPlot == 19, 5, 
+                                                          ifelse(subPlot == 20, 1, 
+                                                                 ifelse(subPlot == 21, 5, 
+                                                                        ifelse(subPlot == 22, 5,
+                                                                               ifelse(subPlot == 28, 5,
+                                                                                      ifelse(subPlot == 31, 5, NA))))))))))),
          lichen = NA,
-         litter = NA,
+         litter = ifelse(subPlot == 4, 25, 
+                         ifelse(subPlot == 8, 30, 
+                                ifelse(subPlot == 12, 70, 
+                                       ifelse(subPlot == 14, 50,
+                                              ifelse(subPlot == 17, 50,
+                                                     ifelse(subPlot == 18, 30, 
+                                                            ifelse(subPlot == 19, 40,
+                                                                   ifelse(subPlot == 20, 25,
+                                                                          ifelse(subPlot == 21, 70, 
+                                                                                 ifelse(subPlot == 22, 30,
+                                                                                        ifelse(subPlot == 28, 50,
+                                                                                               ifelse(subPlot == 29, 25,
+                                                                                                      ifelse(subPlot == 30, 25,
+                                                                                                             ifelse(subPlot == 31, 25, 
+                                                                                                                    ifelse(subPlot == 32, 50,
+                                                                                                                           ifelse(subPlot == 33, 30,
+                                                                                                                                  ifelse(subPlot == 35, 40, NA))))))))))))))))),
          soil = NA,
          rock = NA,
          poo = NA,
          fungus = NA,
          bare = NA,
          logger = NA,
-         vegetation_height_mm = NA,
-         moss_depth_mm = NA,
+         vegetation_height_mm = ifelse(subPlot == 12, 70,  NA),
+         moss_depth_mm = ifelse(subPlot == 12, 10, NA),
          comments = NA,
          date_comment = NA,
-         recorder = NA,
-         writer = NA,
-         vegetation_cover = NA)
+         recorder = "Siri Lie Olsen",
+         writer = "Siri Lie Olsen",
+         vegetation_cover = 90)
 
-Gud_4_1_Car_vag_fix <- community_clean |> 
+Gud_4_1_Car_vag_fix <- community_clean_skj |> 
   filter(plotID == "Gud_4_1", species == "Car_vag", year == "2021") |> 
+  filter(!subPlot %in% c(1, 2, 3, 4, 5, 6, 7, 8, 14, 15, 21, 22, 28, 29, 30, 31, 32, 33, 34, 35)) |> #Remove the subplots they didn't survey in 2022
   mutate(year = 2022,
-         date = NA,
-         weather = NA,
+         date = as.Date("2022-08-08"),
+         weather = "cloudy/sunny",
          moss = NA,
          lichen = NA,
-         litter = NA,
+         litter = ifelse(subPlot == 10, 30, 
+                         ifelse(subPlot == 12, 10, 
+                                ifelse(subPlot == 16, 5, 
+                                       ifelse(subPlot == 17, 5,
+                                              ifelse(subPlot == 18, 5,
+                                                     ifelse(subPlot == 19, 5, 
+                                                            ifelse(subPlot == 20, 5,
+                                                                   ifelse(subPlot == 24, 5,
+                                                                          ifelse(subPlot == 26, 5, NA))))))))),
          soil = NA,
          rock = NA,
          poo = NA,
          fungus = NA,
          bare = NA,
          logger = NA,
-         vegetation_height_mm = NA,
+         vegetation_height_mm = ifelse(subPlot == 10, 110, 
+                                       ifelse(subPlot == 12, 130, 
+                                              ifelse(subPlot == 24, 120,
+                                                     ifelse(subPlot == 26, 130, NA)))),
          moss_depth_mm = NA,
          comments = NA,
          date_comment = NA,
-         recorder = NA,
-         writer = NA,
-         vegetation_cover = NA)
+         recorder = "Camilla Zernichow",
+         writer = "Camilla Zernichow",
+         vegetation_cover = 60)
 
-community_clean <- community_clean|>
+community_clean_skj_gud <- community_clean_skj|>
   #mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_1_2" & year == 2019, "Car_big", species))|> #Keeping this as Car_sp because both med and Siri describe it differently than Car_big, and similarly (light green, long, thin, with long tip).
   mutate(species = ifelse(species == "Vio_pal_cf" & plotID == "Gud_1_3", "Vio_pal", species))|>
   mutate(cover = ifelse(species == "Vio_pal" & plotID == "Gud_1_3" & year == 2019, 4 ,cover))|>
@@ -1236,7 +1273,6 @@ community_clean <- community_clean|>
   mutate(species = ifelse(species == "Car_pil_cf" & plotID == "Gud_7_4","Car_pil", species))|>
   mutate(cover = ifelse(species == "Car_vag" & plotID == "Gud_7_4" & year == 2019, 1, cover))|>
   mutate(species = ifelse(species %in% c("Pyr_sp_IKKE_rotundifolia", "Pyr_min") & plotID == "Gud_7_4", "Pyr_rot", species))|>
-
   mutate(species = ifelse(species == "Alc_sp_cf" & plotID == "Gud_7_6", "Alc_sp", species))|>
   mutate(cover = ifelse(species =="Alc_sp" & plotID == "Gud_7_6" & year == 2019, 1, cover))|>
   mutate(cover = ifelse(species =="Agr_cap" & plotID == "Gud_7_6" & year == 2019, 7, cover))|> #Entering cover info from previous year
@@ -1249,29 +1285,39 @@ community_clean <- community_clean|>
 
 ###### Lavisdalen ######
 
-Lav_3_1_Agr_cap_fix <- community_clean |> 
+Lav_3_1_Agr_cap_fix <- community_clean_skj_gud |> 
   filter(plotID == "Lav_3_1", species == "Agr_cap", year == "2018") |> 
   mutate(year = 2019,
-         date = NA,
-         weather = NA,
-         moss = NA,
-         lichen = NA,
-         litter = NA,
+         date = as.Date("2019-08-05"),
+         weather = "Overcast/thunderstorm, stopped working",
+         moss = ifelse(subPlot == 1, 30, 
+                       ifelse(subPlot == 6, 35,
+                              ifelse(subPlot == 14, 75,
+                                     ifelse(subPlot == 18, 25,
+                                            ifelse(subPlot == 26, 20, NA))))),
+         lichen = ifelse(subPlot == 1, 10,
+                         ifelse(subPlot == 18, 30,
+                                ifelse(subPlot == 26, 20, NA))),
+         litter = ifelse(subPlot == 1, 60, 
+                         ifelse(subPlot == 6, 30,
+                                ifelse(subPlot == 14, 20,
+                                       ifelse(subPlot == 18, 40,
+                                              ifelse(subPlot == 26, 40, NA))))),
          soil = NA,
          rock = NA,
          poo = NA,
          fungus = NA,
          bare = NA,
          logger = NA,
-         vegetation_height_mm = NA,
-         moss_depth_mm = NA,
+         vegetation_height_mm = ifelse(subPlot == 26, 35, NA),
+         moss_depth_mm = ifelse(subPlot == 26, 12, NA),
          comments = NA,
          date_comment = NA,
-         recorder = NA,
-         writer = NA,
-         vegetation_cover = NA)
+         recorder = "Ragnhild Gya",
+         writer = "Ragnhild Gya",
+         vegetation_cover = 70)
 
-community_clean <- community_clean |>
+community_clean_skj_gud_lav <- community_clean_skj_gud |>
   mutate(species = ifelse(species == "Agr_cap_cf" & plotID == "Lav_1_1", "Agr_cap", species))|>
   mutate(species = ifelse(species %in% c("Car_pil_cf", "Car_sp") & plotID == "Lav_1_1", "Car_nor", species))|> #It is in the same location as an unidentified Carex that we could not figure out in 2023 either, but we guessed Car_nor then, so going for that for all the years.
   mutate(species = ifelse(species == "Car_nor_cf" & plotID == "Lav_1_1" & year == "2023", "Car_nor", species))|> 
@@ -1516,29 +1562,33 @@ community_clean <- community_clean |>
 
 ###### Ulvehaugen ######
 
-Ulv_5_5_Agr_mer_fix <- community_clean |> 
+Ulv_5_5_Agr_mer_fix <- community_clean_skj_gud_lav |> 
   filter(plotID == "Ulv_5_5", species == "Agr_mer", year == "2019") |> 
   mutate(year = 2018,
-         date = NA,
-         weather = NA,
-         moss = NA,
+         date = as.Date("2018-08-01"),
+         weather = "warm, 18:00",
+         moss = ifelse(subPlot == 17, 20,
+                       ifelse(subPlot == 18, 40,
+                              ifelse(subPlot == 24, 10, NA))),
          lichen = NA,
-         litter = NA,
+         litter = ifelse(subPlot == 17, 80,
+                         ifelse(subPlot == 18, 60,
+                                ifelse(subPlot == 24, 90, NA))),
          soil = NA,
          rock = NA,
          poo = NA,
          fungus = NA,
          bare = NA,
          logger = NA,
-         vegetation_height_mm = NA,
-         moss_depth_mm = NA,
+         vegetation_height_mm = ifelse(subPlot == 24, 90, NA),
+         moss_depth_mm = ifelse(subPlot == 24, 19, NA),
          comments = NA,
          date_comment = NA,
-         recorder = NA,
-         writer = NA,
-         vegetation_cover = NA)
+         recorder = "Vigdis Vandvik",
+         writer = "Vigdis Vandvik",
+         vegetation_cover = 25)
 
-community_clean <- community_clean |>
+community_clean_skj_gud_lav_ulv <- community_clean_skj_gud_lav |>
   mutate(species = ifelse(species == "Vio_sp" & plotID == "Ulv_1_1", "Vio_bif", species))|>
   mutate(cover = ifelse(species == "Vio_bif" & plotID == "Ulv_1_1" & year == 2021, 7, cover))|>
   mutate(cover = ifelse(species == "Phl_alp" & plotID == "Ulv_1_1" & year == 2021, 2, cover))|>
@@ -1706,7 +1756,7 @@ community_clean <- community_clean |>
 #The Ulv_7_3 2018 plot lacks cover. We have decided to give it the same cover as the year after
 
 #Making a dataset with the 2019 coverdata for the species in Ulv_7_3
-Ulv_7_3_2019 <- community_clean|>
+Ulv_7_3_2019 <- community_clean_skj_gud_lav_ulv|>
   filter(plotID == "Ulv_7_3") |>
   filter(year == 2019) |>
   select(species, cover, plotID)|>
@@ -1714,7 +1764,7 @@ Ulv_7_3_2019 <- community_clean|>
   unique()|>
   rename(imputed_cover = cover)
 
-community_clean <- community_clean|>
+community_clean_skj_gud_lav_ulv_7_3 <- community_clean_skj_gud_lav_ulv|>
   left_join(Ulv_7_3_2019, by = c("species", "plotID", "year")) |>
   mutate(cover = ifelse(plotID == "Ulv_7_3" & year == 2018, imputed_cover, cover)) |> #Using coverdata from 2019
   select(-imputed_cover) |>
@@ -1723,13 +1773,13 @@ community_clean <- community_clean|>
 ### Removing duplicates that were created during cleaning
 #Such as when we changed one species to another, but it was already registered in that subplot, etc.
 
-community_clean <- community_clean |> unique()
-community_clean <- community_clean |> 
+community_clean_unique <- community_clean_skj_gud_lav_ulv_7_3 |> 
+  unique() |> 
   filter(!(plotID == "Lav_2_6" & year == 2021 & subPlot == 29 & species == "Sal_her" & value == 1)) #In this subplot Vac_myr was changed for Sal_her. But Sal_her was dominant (D) in this subplot, and the lines therefore not exact duplicates
 
 
 ##### Adding information about total % of different functional groups #####
-community_clean <- community_clean|>
+community_clean_functional <- community_clean_unique|>
   mutate(functional_group = case_when(species %in% c("Ant_dio", "Ant_sp", "Eup_wet", "Sib_pro", "Alc_alp", "Alc_sp", "Oma_sup", "Ver_alp", "Vio_pal", "Cam_rot", "Sag_sag", "Leo_aut", "Sel_sel", "Pyr_sp", "Luz_mul", "Tar_sp", "Pot_cra", "Dip_alp", "Tha_alp", "Lys_eur", "Hie_alp", "Rum_ace", "Cer_cer", "Epi_ana", "Equ_arv", "Epi_sp", "Tof_pus", "Nid_seedling", "Bar_alp", "Sil_aca", "Par_pal", "Hie_alp", "Cer_fon", "Pot_ere", "Vio_bif", "Coel_vir", "Ran_acr", "Gen_niv", "Pin_vul", "Eri_sp", "Ach_mil", "Pyr_min", "Bis_viv", "Ast_alp", "Rum_acl", "Bot_lun", "Gen_ama", "Ran_sp", "Oxy_dig", "Fern", "Ger_syl", "Geu_riv", "Rhi_min", "Hie_sp", "Tri_ces", "Hyp_sel", "Sol_vir", "Vio_can", "Ort_sec", "Pru_vul", "Ver_off", "Suc_pra", "Hyp_mac", "Ran_pyg", "Dry_oct", "Luz_spi", "Tri_rep", "Hyp_sp", "Ste_gra", "Sel_sp", "Vio_tri", "Ver_cha", "Gen_sp", "Tri_sp", "Oma_sp", "Cer_alp", "Tri_pra", "Sil_vul", "Sag_sp", "Phe_con", "Gym_dry", "Oma_nor", "Gal_sp", "Gen_cam", "Oxa_ace", "Lot_cor", "Aco_sep", "Eri_uni", "Equ_sci", "Sau_alp", "Leu_vul", "Hie_pil", "Vio_sp", "Gal_bor", "Lyc_alp") ~ "Forbs",
                                       species %in% c("Ant_odo", "Nar_str", "Agr_mer", "Agr_cap", "Car_big", "Car_nor", "Car_cap", "Car_pal", "Car_pil", "Poa_pra", "Car_vag", "Ave_fle", "Des_ces", "Poa_alp", "Jun_tri", "Phl_alp", "Fes_ovi", "Fes_rub", "Sau_alp", "Fes_sp" ,"Car_sp", "Fes_viv", "Des_alp", "Car_fla", "Car_sax", "Car_atr" ) ~ "Graminoids",
                                       species %in% c("Sal_her", "Vac_myr", "Vac_uli", "Sal_sp", "Bet_nan", "Bet_pub", "Sal_lan") ~"Deciduous_shrubs",
@@ -1750,12 +1800,12 @@ community_clean <- community_clean|>
     date = min(date)) #If data collection was done over several days pick the first date.
 
 
-community_clean <- community_clean|>
+community_clean_soil <- community_clean_functional|>
   mutate(bare_ground = soil) |>
   mutate(bare_ground = ifelse(!is.na(bare), bare, bare_ground)) |>
   select(-block, -plot, -bare, -soil)
 
-total_cover <- community_clean |>
+total_cover <- community_clean_soil |>
   select(plotID, subPlot, moss, year, measure, poo, lichen, litter, rock, fungus, bare_ground) |>
   filter(measure == "subPlot") |>
   unique() |>  #Gjør at koden kun tar de unike verdiene, og tar derfor vekk kopier. 
@@ -1804,7 +1854,7 @@ total_cover <- community_clean |>
                                         total_fungus_cover > 0 ~ round(total_fungus_cover, digits = 0))) |>
   select( -c(moss, measure, poo, lichen, litter, rock, fungus, bare_ground))
 
-vegetation_height_and_moss_depth_mean <- community_clean |>
+vegetation_height_and_moss_depth_mean <- community_clean_soil |>
   select(plotID, subPlot, year, vegetation_height_mm, moss_depth_mm)|>
   unique()|>
   group_by(plotID, year)|>
@@ -1818,14 +1868,14 @@ vegetation_height_and_moss_depth_mean <- community_clean |>
   mutate(vegetation_height_mean = ifelse(is.na(vegetation_height_mean), NA_real_, vegetation_height_mean),
          moss_depth_mean = ifelse(is.na(moss_depth_mean), NA_real_, moss_depth_mean))
 
-community_clean <- community_clean |>
+community_cleaned <- community_clean_soil |>
   left_join(total_cover, by = c("subPlot","plotID", "year"))|>
   left_join(vegetation_height_and_moss_depth_mean, by = c("plotID", "year")) |>
   unique() #removing any duplicates from the renaming process (if there was already a Car_big in the subplot and we renamed Car_sp tp Car_big for example)
 
 
 ####______ Making the 3 final datasets that are cleaned and put out in OSF ______####
-community_clean_subplot <- community_clean |>
+community_clean_subplot <- community_cleaned |>
   filter(measure == "subPlot") |>
   select("site", "plotID", "warming", "treatment", "year", "date",
          "recorder", "writer", "subPlot","moss",
@@ -1834,13 +1884,13 @@ community_clean_subplot <- community_clean |>
          "value", "presence", "fertile", "dominance", "juvenile", "seedling") |>
   unique()
 
-community_clean_species_cover <- community_clean |>
+community_clean_species_cover <- community_cleaned |>
   select("site", "plotID", "warming", "treatment", "year", "date",
          "recorder", "writer", "functional_group", "species",
          "cover") |>
   unique()
 
-community_clean_plotlevel_info <- community_clean |>
+community_clean_plotlevel_info <- community_cleaned |>
   filter(subPlot != 9) |>
   select("site", "plotID", "warming", "treatment", "year", "date",
          "recorder", "writer", "vegetation_cover", "total_bryophyte_cover",
