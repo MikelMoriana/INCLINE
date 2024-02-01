@@ -1764,7 +1764,7 @@ Ulv_7_3_2019 <- community_clean_skj_gud_lav_ulv|>
   unique()|>
   rename(imputed_cover = cover)
 
-community_clean_skj_gud_lav_ulv_7_3 <- community_clean_skj_gud_lav_ulv|>
+community_clean_skj_gud_lav_ulv_7_3 <- community_clean_skj_gud_lav_ulv |>
   left_join(Ulv_7_3_2019, by = c("species", "plotID", "year")) |>
   mutate(cover = ifelse(plotID == "Ulv_7_3" & year == 2018, imputed_cover, cover)) |> #Using coverdata from 2019
   select(-imputed_cover) |>
@@ -2275,7 +2275,22 @@ community_clean_subplot_nr <- community_clean_subplot |>
          litter = ifelse(plotID == "Ulv_2_1" & year == 2023 & subPlot == 28, 10, litter)) |> 
   filter(!(plotID == "Lav_3_6" & year == 2021 & subPlot == 27))
 
+# Some individuals were a bit uncertain (suffix _cf in the file)----
 
+community_clean_subplot_nr_cf <- community_clean_subplot_nr |>
+  mutate(species = ifelse(species == "Agr_cap_cf", "Agr_cap", species)) |>
+  mutate(species = ifelse(species == "Car_cap_cf" & plotID == "Gud_4_3", "Car_fla", species)) |>
+  mutate(species = ifelse(species == "Car_cap_cf", "Car_cap", species)) |>
+  mutate(species = ifelse(species == "Car_nig_cf", "Car_big", species)) |>
+  mutate(species = ifelse(species == "Car_nor_cf" & plotID == "Lav_3_3", "Car_nor", species)) |>
+  mutate(species = ifelse(species == "Car_nor_cf" & plotID == "Skj_1_1", "Car_cap", species)) |>
+  mutate(species = ifelse(species == "Epi_ana_cf", "Epi_ana", species)) |>
+  filter(!(species == "Ran_acr_cf")) |>
+  filter(!(species == "Ran_acr" & plotID == "Gud_2_2")) |>
+  filter(!(species == "Vio_can_cf" & plotID == "Ulv_7_4")) |>
+  mutate(value = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, "1j", value)) |>
+  mutate(juvenile = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, "TRUE", juvenile)) |>
+  unique()
 
 
 # ----
