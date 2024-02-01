@@ -2289,7 +2289,7 @@ community_clean_subplot_nr_cf <- community_clean_subplot_nr |>
   filter(!(species == "Ran_acr" & plotID == "Gud_2_2")) |>
   filter(!(species == "Vio_can_cf" & plotID == "Ulv_7_4")) |>
   mutate(value = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, "1j", value)) |>
-  mutate(juvenile = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, "TRUE", juvenile)) |>
+  mutate(juvenile = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, TRUE, juvenile)) |>
   unique()
 
 # For some individuals we know the genus but not the species (_sp)----
@@ -2345,7 +2345,7 @@ community_clean_subplot_nr_cf_sp <- community_clean_subplot_nr_cf |>
   mutate(species = ifelse(species == "Epi_sp" & plotID %in% c("Skj_2_5", "Lav_5_3"), "Epi_ana", species)) |>
   filter(!(plotID %in% c("Gud_1_5", "Skj_3_4") & species == "Epi_sp")) |>
   mutate(value = ifelse(species == "Ver_alp" & plotID == "Skj_3_4" & year == 2021 & subPlot == 1, "1J", value)) |>
-  mutate(juvenile = ifelse(species == "Ver_alp" & plotID == "Skj_3_4" & year == 2021 & subPlot == 1, "TRUE", juvenile)) |>
+  mutate(juvenile = ifelse(species == "Ver_alp" & plotID == "Skj_3_4" & year == 2021 & subPlot == 1, TRUE, juvenile)) |>
   mutate(species = ifelse(species == "Equ_sp", "Eup_wet", species)) |>
   mutate(species = ifelse(species == "Fes_sp" & plotID == "Ulv_1_4", "Fes_ovi", species)) |>
   mutate(species = ifelse(species == "Fes_sp", "Fes_rub", species)) |>
@@ -2364,7 +2364,7 @@ community_clean_subplot_nr_cf_sp <- community_clean_subplot_nr_cf |>
   mutate(species = ifelse(species == "Tri_sp", "Tri_pra", species)) |>
   filter(!species == "Vio_sp") |>
   mutate(value = ifelse(species == "Vio_bif" & plotID == "Ulv_1_5" & year == 2021 & subPlot %in% c(24, 29), "1s", value)) |>
-  mutate(seedling = ifelse(species == "Vio_bif" & plotID == "Ulv_1_5" & year == 2021 & subPlot %in% c(24, 29), "TRUE", seedling)) |>
+  mutate(seedling = ifelse(species == "Vio_bif" & plotID == "Ulv_1_5" & year == 2021 & subPlot %in% c(24, 29), TRUE, seedling)) |>
   unique()
 
 # For some individuals we do not know the species----
@@ -2377,12 +2377,35 @@ community_clean_subplot_nr_cf_sp_unknown <- community_clean_subplot_nr_cf_sp |>
   filter(!(species %in% c("Nid_juvenile", "Nid_seedling", "Poaceae_sp", "Unknown"))) |>
   unique()
 
-# ----
+# We correct some last few errors----
+
+tar_sp_lav_2_2_2021 <- community_clean_subplot_nr_cf_sp_unknown |>
+  filter(plotID == "Lav_2_2" & year == 2021 & subPlot %in% c(8, 10, 19, 20, 26, 32, 33) & value == 1) |>
+  mutate(functional_group = "Forbs") |>
+  mutate(species = "Tar_sp") |>
+  unique()
+ver_alp_lav_2_2_2021 <- community_clean_subplot_nr_cf_sp_unknown |>
+  filter(plotID == "Lav_2_2" & year == 2021 & subPlot == 1 & functional_group == "Forbs" & value == 1) |>
+  mutate(species = "Ver_alp") |>
+  unique()
+
+agr_cap_lav_3_3_2021 <- community_clean_subplot_nr_cf_sp_unknown |>
+  filter(plotID == "Lav_3_3" & year == 2021 & subPlot == 10 & functional_group == "Graminoids" & value == 1) |>
+  mutate(species = "Agr_cap")
+
+community_subplot_fixed <- community_clean_subplot_nr_cf_sp_unknown |>
+  mutate(species = ifelse(species == "Ant_alp" & plotID == "Lav_2_2", "Alc_alp", species)) |>
+  filter(!(species == "Tar_sp" & plotID == "Lav_2_2" & year == 2021)) |>
+  bind_rows(tar_sp_lav_2_2_2021) |>
+  bind_rows(ver_alp_lav_2_2_2021) |>
+  bind_rows(agr_cap_lav_3_3_2021)
+
+# Saving the files----
 
 ifelse(!dir.exists("data_cleaned"), dir.create("data_cleaned"), FALSE)
 write.csv(community_clean_species_cover, file = "data_cleaned/INCLINE_community_species_cover_fixed.csv", row.names= FALSE)
 
-write.csv(community_clean_subplot, file = "data_cleaned/INCLINE_community_subplot_fixed.csv", row.names= FALSE)
+write.csv(community_subplot_fixed, file = "data_cleaned/INCLINE_community_subplot_fixed.csv", row.names= FALSE)
 
 write.csv(community_clean_plotlevel_info, file = "data_cleaned/INCLINE_community_plotlevel_info_fixed.csv", row.names= FALSE)
 
