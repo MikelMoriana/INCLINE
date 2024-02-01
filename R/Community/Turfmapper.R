@@ -401,3 +401,13 @@ filter(community_clean_subplot_nr_cf, grepl("Tri", species) & species != "Tri_ce
 # Vio_sp
 find_plot_year(community_clean_subplot_nr_cf, "Vio_sp") # Ulv_1_5 in 2021
 turfplot(community_clean_subplot_nr_cf, "Ulv_1_5") # It is probably Vio_bif
+
+# For some individuals we do not know the species----
+
+find_plot_year(community_clean_subplot_nr_cf_sp, "Ver_cha_eller_Hyp_mac") # Skj_2_1 in 2023
+turfplot(community_clean_subplot_nr_cf_sp, "Skj_2_1") # After some discussion we have agreed this is Hyp_mac
+
+find_plot_year(community_clean_subplot_nr_cf_sp, "Unknown") |> print(n = 21) # After looking at the scans, we might be able to fix: Lav_1_3, Lav_3_3 and Gud_5_5 in 2021. Cannot do anything about the rest
+turfplot(community_clean_subplot_nr_cf_sp, "Lav_1_3") # The scans says Van_atr, it is Val_atr
+turfplot(community_clean_subplot_nr_cf_sp, "Lav_3_3") # The scans says Suc_vul, it is Suc_pra
+turfplot(community_clean_subplot_nr_cf_sp, "Gud_5_5") # The scans says Fjelljamne, it is Dip_alp
