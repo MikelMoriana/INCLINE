@@ -2367,6 +2367,16 @@ community_clean_subplot_nr_cf_sp <- community_clean_subplot_nr_cf |>
   mutate(seedling = ifelse(species == "Vio_bif" & plotID == "Ulv_1_5" & year == 2021 & subPlot %in% c(24, 29), "TRUE", seedling)) |>
   unique()
 
+# For some individuals we do not know the species----
+
+community_clean_subplot_nr_cf_sp_unknown <- community_clean_subplot_nr_cf_sp |>
+  mutate(species = ifelse(species == "Ver_cha_eller_Hyp_mac", "Hyp_mac", species)) |>
+  mutate(species = ifelse(species == "Unknown" & plotID == "Lav_1_3" & year == 2021, "Val_atr", species)) |>
+  mutate(species = ifelse(species == "Unknown" & plotID == "Lav_3_3" & year == 2021, "Suc_pra", species)) |>
+  mutate(species = ifelse(species == "Unknown" & plotID == "Gud_5_5" & year == 2021, "Dip_alp", species)) |>
+  filter(!(species %in% c("Nid_juvenile", "Nid_seedling", "Poaceae_sp", "Unknown"))) |>
+  unique()
+
 # ----
 
 ifelse(!dir.exists("data_cleaned"), dir.create("data_cleaned"), FALSE)
