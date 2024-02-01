@@ -14,6 +14,14 @@ find_subplot_species <- function(x, y, z) {
     select(subPlot, species, value)
 }
 
+# Find in what specific plot and year a species was recorded
+find_plot_year <- function(x, y) {
+  x |>
+    filter(species == y) |>
+    select(plotID, year) |>
+    unique()
+}
+
 # We adjust the make_turf_function from turfmapper to not include cover
 make_turf_plot_fertile <- function(data, grid_long, year, subturf, species, fertile, title) {
   data <- rename(data,
@@ -235,3 +243,161 @@ turfplot(community_clean_subplot_nr, "Gud_2_2") # The scans says Rum_ace. But ne
 
 find_plot_year(community_clean_subplot_nr, "Vio_can_cf") # Ulv_7_4
 turfplot(community_clean_subplot_nr, "Ulv_7_4") # Seems it is actually a juvenile Vio_bif
+
+# For some individuals we know the genus but not the species (_sp)----
+
+levels(as.factor(grep("_sp", community_clean_subplot_nr_cf$species, value = TRUE)))
+# Alc_sp and Tar_sp are species by themselves, we keep them. We check the rest
+
+# Ant_sp
+find_plot_year(community_clean_subplot_nr_cf, "Ant_sp") # Skj_6_3 in 2019
+turfplot(community_clean_subplot_nr_cf, "Skj_6_3") # Not really possible to tell, I drop it
+
+# Car_sp
+find_plot_year(community_clean_subplot_nr_cf, "Car_sp") |> print(n = 41) # Many cases. I create a file only with Carex
+community_carex <- community_clean_subplot_nr_cf |> filter(grepl("Car_", species))
+turfplot(community_carex, "Gud_1_2") # Seems it is Car_vag in 2018. In the other cases either the other species were already present in the subplot, or none appear any year, and then better to drop them
+turfplot(community_carex, "Gud_1_3") # Seems it is Car_vag in all cases. No duplicates
+turfplot(community_carex, "Gud_1_4") # Seems it is Car_vag in all cases. Duplicates with unique()
+turfplot(community_carex, "Gud_1_5") # Seems it is Car_vag in all cases. Duplicate with unique()
+turfplot(community_carex, "Gud_2_1") # Seems it is Car_big in all cases. Subplot1 must be removed
+turfplot(community_carex, "Gud_2_2") # Seems it is Car_big in all cases. Car_sp in subplot17 2022 is cf, we remove the Car_big. Car_big in subplot34 2023 is D, we remove the Car_sp
+turfplot(community_carex, "Gud_2_3") # Seems it is Car_big in all cases. Duplicates with unique()
+turfplot(community_carex, "Gud_2_4") # Seems it is Car_big in all cases. Duplicate with unique()
+turfplot(community_carex, "Gud_3_2") # Seems it is Car_big in 2018 and Car_vag in 2019. Duplicate with unique()
+turfplot(community_carex, "Gud_3_3") # Seems it is Car_big in all cases. No duplicates
+turfplot(community_carex, "Gud_3_5") # Seems it is Car_vag in all cases. No duplicates
+turfplot(community_carex, "Gud_4_1") # All other Carex already present in that subplot. I drop it
+turfplot(community_carex, "Gud_4_3") # All other Carex already present in those subplots. I drop them
+turfplot(community_carex, "Gud_4_4") # All other Carex already present in those subplots. I drop them
+turfplot(community_carex, "Gud_5_1") # Seems it is Car_cap (looking at the scan). No duplicates
+turfplot(community_carex, "Gud_5_2") # All other Carex already present in that subplot. I drop it
+turfplot(community_carex, "Gud_5_4") # Seems it is Car_big. No duplicate
+turfplot(community_carex, "Gud_5_5") # Seems it is Car_vag in all cases. No duplicates
+turfplot(community_carex, "Gud_7_2") # Car_big: 3, 12 (2018), 14, 16. Car_vag: 12 (2021), 21. Both: 8. Remove: 15, 35
+turfplot(community_carex, "Gud_7_3") # One Car_big (subplot 30). All other Carex in the other subplot
+turfplot(community_carex, "Gud_7_4") # Seems it is Car_big in all cases. Duplicate with unique()
+turfplot(community_carex, "Gud_7_6") # Car_vag: 1, 24, 31. Car_big: 5. Car_fla: 8. Remove: 2
+turfplot(community_carex, "Lav_2_2") # Seems it is Car_pil. No duplicates
+turfplot(community_carex, "Lav_4_3") # Seems it is Car_vag. Duplicate with unique()
+turfplot(community_carex, "Skj_5_3") # Seems it is Car_cap. No duplicates
+turfplot(community_carex, "Ulv_3_3") # It is probably Car_pal. No duplicates
+turfplot(community_carex, "Ulv_3_5") # It is probably Car_big. No duplicates
+turfplot(community_carex, "Ulv_6_3") # Not enough information to decide. I drop it
+
+# Epi_sp
+find_plot_year(community_clean_subplot_nr_cf, "Epi_sp") # Skj_2_5 and Gud_1_5 in 2018, Lav_5_3 and Skj_3_4 in 2021
+turfplot(community_clean_subplot_nr_cf, "Gud_1_5")
+filter(community_clean_subplot_nr_cf, grepl("Epi_", species) & grepl("Gud_1", plotID)) |> select(plotID, year, species)
+turfplot(community_clean_subplot_nr_cf, "Lav_5_3") # It is Epi_ana
+turfplot(community_clean_subplot_nr_cf, "Skj_2_5") # Seems it is Epi_ana
+turfplot(community_clean_subplot_nr_cf, "Skj_3_4")
+filter(community_clean_subplot_nr_cf, grepl("Epi_", species) & grepl("Skj_3", plotID)) |>
+  select(plotID, year, species) |>
+  print(n = 32)
+# Gud_1_5 and Skj_3_4 are difficult to tell. But small Epilobium can be confounded with Veronica alpina. In both cases Ver_alp is found within the same subplot, so we remove them and edit the values of Ver_alp (if needed)
+
+# Equ_sp
+find_plot_year(community_clean_subplot_nr_cf, "Equ_sp") # Skj_5_2 in 2021
+# I have checked the scan, this is actually Eup_sp, there was a typo
+turfplot(community_clean_subplot_nr_cf, "Skj_5_2") # It is probably Eup_wet
+
+# Eri_sp
+find_plot_year(community_clean_subplot_nr_cf, "Eri_sp") # Skj_1_4 in 2018 and 2021
+turfplot(community_clean_subplot_nr_cf, "Skj_1_4")
+filter(community_clean_subplot_nr_cf, grepl("Eri_", species)) |> select(plotID, year, species) # We do not have enough information, we keep it as Eri_sp
+
+# Fes_sp
+find_plot_year(community_clean_subplot_nr_cf, "Fes_sp") # Ulv_1_4 in 2018, Gud_3_5 and Skj_2_6 in 2023
+turfplot(community_clean_subplot_nr_cf, "Gud_3_5") # Seems it is Fes_rub
+turfplot(community_clean_subplot_nr_cf, "Skj_2_6") # Difficult to tell
+filter(community_clean_subplot_nr_cf, grepl("Fes_", species) & grepl("Skj_2", plotID)) |> select(plotID, year, species) # It is probably Fes_rub
+turfplot(community_clean_subplot_nr_cf, "Ulv_1_4") # It is not Fes_rub
+filter(community_clean_subplot_nr_cf, species == "Fes_ovi" & grepl("Ulv_", plotID)) # It is probably Fes_ovi
+filter(community_clean_subplot_nr_cf, species == "Fes_viv" & grepl("Ulv_", plotID)) # And not Fes_viv
+
+# Gal_sp
+find_plot_year(community_clean_subplot_nr_cf, "Gal_sp") # Ulv_5_5 and Gud_3_6 in 2022, Gud_3_6 and Gud_6_4 in 2023
+turfplot(community_clean_subplot_nr_cf, "Gud_3_6") # Difficult to tell
+turfplot(community_clean_subplot_nr_cf, "Gud_6_4") # Difficult to tell
+filter(community_clean_subplot_nr_cf, site == "Gudmedalen" & grepl("Gal_", species)) |> select(plotID, year, species) # We do not have enough information, we keep all in Gudmedalen as Gal_sp
+turfplot(community_clean_subplot_nr_cf, "Ulv_5_5") # Seems it is Gal_bor
+
+# Gen_sp
+find_plot_year(community_clean_subplot_nr_cf, "Gen_sp") # Gud_7_3 in 2019
+turfplot(community_clean_subplot_nr_cf, "Gud_7_3") # Seems it is Gen_niv
+
+# Hie_sp
+find_plot_year(community_clean_subplot_nr_cf, "Hie_sp") # Gud_4_3 in 2018; Gud_4_3, Gud_7_6, Ulv_1_4, Ulv_1_3 and Ulv_6_3 in 2019; Gud_4_1, Gud_4_3 and Ulv_6_4 in 2021; Skj_2_5 in 2022; Gud_7_3 in 2023
+turfplot(community_clean_subplot_nr_cf, "Gud_4_1") # Difficult to tell
+turfplot(community_clean_subplot_nr_cf, "Gud_4_3") # Difficult to tell
+filter(community_clean_subplot_nr_cf, grepl("Hie", species) & grepl("Gud_4", plotID)) |> select(plotID, year, species) # Seems they might be Hie_pil, but only found in 2018
+turfplot(community_clean_subplot_nr_cf, "Gud_7_3") # Difficult to tell
+turfplot(community_clean_subplot_nr_cf, "Gud_7_6") # Difficult to tell
+filter(community_clean_subplot_nr_cf, grepl("Hie", species) & species != "Hie_sp" & grepl("Gud_", plotID)) |>
+  select(plotID, year, species) |>
+  print(n = 44) # Not possible to say
+turfplot(community_clean_subplot_nr_cf, "Skj_2_5") # Difficult to tell
+filter(community_clean_subplot_nr_cf, grepl("Hie", species) & grepl("Skj_", plotID)) |>
+  select(plotID, year, species) |>
+  print(n = 33) # Not possible to say
+turfplot(community_clean_subplot_nr_cf, "Ulv_1_3") # Difficult to tell
+turfplot(community_clean_subplot_nr_cf, "Ulv_1_4") # Difficult to tell
+turfplot(community_clean_subplot_nr_cf, "Ulv_6_3") # Difficult to tell
+turfplot(community_clean_subplot_nr_cf, "Ulv_6_4") # Difficult to tell
+filter(community_clean_subplot_nr_cf, grepl("Hie", species) & grepl("Ulv_", plotID)) |>
+  select(plotID, year, species) |>
+  print(n = 27) # Not possible to say
+# It is best to keep it as _sp rather than remove it
+
+# Hyp_sp
+find_plot_year(community_clean_subplot_nr_cf, "Hyp_sp") # Skj_3_3 in 2021
+turfplot(community_clean_subplot_nr_cf, "Skj_3_3") # Seems it is Hyp_mac
+
+# Leo_sp
+find_plot_year(community_clean_subplot_nr_cf, "Leo_sp") # Ulv_6_1 in 2021
+turfplot(community_clean_subplot_nr_cf, "Ulv_6_1") # Seems it is Leo_aut
+
+# Oma_sp
+find_plot_year(community_clean_subplot_nr_cf, "Oma_sp") # Lav_7_1 in 2021 and Skj_7_1 in 2023
+turfplot(community_clean_subplot_nr_cf, "Lav_7_1") # Seems it is Oma_sup
+turfplot(community_clean_subplot_nr_cf, "Skj_7_1") # Might be Oma_sup
+filter(community_clean_subplot_nr_cf, grepl("Oma_", species) & grepl("Skj_7", plotID)) |> select(plotID, year, species) # It is probably Oma_sup
+
+# Pyr_sp
+find_plot_year(community_clean_subplot_nr_cf, "Pyr_rot") # Many cases. Since it is difficult to distinguish Pyr_min and Pyr_rot, we group all of them under the name Pyr_sp
+
+# Ran_sp
+find_plot_year(community_clean_subplot_nr_cf, "Ran_sp") # Lav_2_3 in 2018
+turfplot(community_clean_subplot_nr_cf, "Lav_2_3") # Seems it is Ran_pyg
+
+# Rhi_sp
+find_plot_year(community_clean_subplot_nr_cf, "Rhi_sp") # Skj_1_4 in 2023
+turfplot(community_clean_subplot_nr_cf, "Skj_1_4") # Difficult to tell
+filter(community_clean_subplot_nr_cf, grepl("Rhi_", species) & grepl("Skj_1", plotID)) |> select(plotID, year, species) # It is probably Rhi_min
+
+# Sag_sp
+find_plot_year(community_clean_subplot_nr_cf, "Sag_sp") # Skj_4_1 in 2021
+turfplot(community_clean_subplot_nr_cf, "Skj_4_1") # Seems it is Sag_sag
+
+# Sal_sp
+find_plot_year(community_clean_subplot_nr_cf, "Sal_sp") # Lav_2_2, Lav_3_3 and Gud_5_1 in 2021
+turfplot(community_clean_subplot_nr_cf, "Gud_5_1") # Seems it is Sal_lan
+turfplot(community_clean_subplot_nr_cf, "Lav_2_2") # Sal_sp does not exist in the scan. The values are not from another species. I remove it
+turfplot(community_clean_subplot_nr_cf, "Lav_3_3") # Sal_sp does not exist in the scan. The values are not from another species. I remove it
+
+# Sel_sp
+find_plot_year(community_clean_subplot_nr_cf, "Sel_sp") # Skj_6_4 in 2019
+turfplot(community_clean_subplot_nr_cf, "Skj_6_4") # Difficult to tell
+filter(community_clean_subplot_nr_cf, grepl("Sel_", species) & grepl("Skj_6", plotID)) |>
+  select(plotID, year, species) |>
+  print(n = 22) # It is probably Sel_sel
+
+# Tri_sp
+find_plot_year(community_clean_subplot_nr_cf, "Tri_sp") # Lav_2_5 in 2021
+turfplot(community_clean_subplot_nr_cf, "Lav_2_5") # Difficult to tell. The scan says Trifolium
+filter(community_clean_subplot_nr_cf, grepl("Tri", species) & species != "Tri_ces" & site == "Lavisdalen") |> select(plotID, year, species) # It could be Tri_pra
+
+# Vio_sp
+find_plot_year(community_clean_subplot_nr_cf, "Vio_sp") # Ulv_1_5 in 2021
+turfplot(community_clean_subplot_nr_cf, "Ulv_1_5") # It is probably Vio_bif
