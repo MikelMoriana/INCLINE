@@ -2292,6 +2292,80 @@ community_clean_subplot_nr_cf <- community_clean_subplot_nr |>
   mutate(juvenile = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, "TRUE", juvenile)) |>
   unique()
 
+# For some individuals we know the genus but not the species (_sp)----
+
+car_sp_gud_7_2_2018 <- filter(community_clean_subplot_nr_cf, species == "Car_sp" & plotID == "Gud_7_2" & subPlot == 8 & year == 2018) # Create a duplicate
+
+community_clean_subplot_nr_cf_sp <- community_clean_subplot_nr_cf |> 
+  filter(species != "Ant_sp") |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_1_2" & year == 2018, "Car_vag", species)) |> 
+  filter(!(species == "Car_sp" & plotID == "Gud_1_2")) |>
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_1_3", "Car_vag", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_1_4", "Car_vag", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_1_5", "Car_vag", species)) |>
+  filter(!(species == "Car_sp" & plotID == "Gud_2_1" & subPlot == 1 & year == 2019)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_2_1", "Car_big", species)) |> 
+  filter(!(species == "Car_big" & plotID == "Gud_2_2" & year == 2022 & subPlot == 17)) |> 
+  filter(!(species == "Car_sp" & plotID == "Gud_2_2" & year == 2023 & subPlot == 34)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_2_2", "Car_big", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_2_3", "Car_big", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_2_4", "Car_big", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_3_2" & year == 2018, "Car_big", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_3_2" & year == 2019, "Car_vag", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_3_3", "Car_big", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_3_5", "Car_vag", species)) |> 
+  filter(!(species == "Car_sp" & plotID == "Gud_4_1")) |> 
+  filter(!(species == "Car_sp" & plotID == "Gud_4_3")) |> 
+  filter(!(species == "Car_sp" & plotID == "Gud_4_4")) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_5_1", "Car_cap", species)) |> 
+  filter(!(species == "Car_sp" & plotID == "Gud_5_2")) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_5_4", "Car_big", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_5_5", "Car_vag", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_2" & subPlot %in% c(3, 14, 16), "Car_big", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_2" & subPlot == 12 & year == 2018, "Car_big", species)) |>
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_2" & subPlot == 12 & year == 2021, "Car_vag", species)) |>
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_2" & subPlot == 21, "Car_vag", species)) |>
+  filter(!(species == "Car_sp" & plotID == "Gud_7_2" & subPlot %in% c(15, 35))) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_2" & subPlot == 8, "Car_big", species)) |>
+  bind_rows(car_sp_gud_7_2_2018) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_2" & subPlot == 8, "Car_vag", species)) |>
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_3" & subPlot == 30, "Car_big", species)) |> 
+  filter(!(species == "Car_sp" & plotID == "Gud_7_3")) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_4", "Car_big", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_6" & subPlot %in% c(1, 24, 31), "Car_vag", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_6" & subPlot == 5, "Car_big", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_7_6" & subPlot == 8, "Car_fla", species)) |> 
+  filter(!(species == "Car_sp" & plotID == "Gud_7_6" & subPlot == 2)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Lav_2_2", "Car_pil", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Lav_4_3", "Car_vag", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Skj_5_3", "Car_cap", species)) |> 
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Ulv_3_3", "Car_pal", species)) |>
+  mutate(species = ifelse(species == "Car_sp" & plotID == "Ulv_3_5", "Car_big", species)) |>
+  filter(!(species == "Car_sp" & plotID == "Ulv_6_3")) |>
+  mutate(species = ifelse(species == "Epi_sp" & plotID %in% c("Skj_2_5", "Lav_5_3"), "Epi_ana", species)) |>
+  filter(!(plotID %in% c("Gud_1_5", "Skj_3_4") & species == "Epi_sp")) |>
+  mutate(value = ifelse(species == "Ver_alp" & plotID == "Skj_3_4" & year == 2021 & subPlot == 1, "1J", value)) |>
+  mutate(juvenile = ifelse(species == "Ver_alp" & plotID == "Skj_3_4" & year == 2021 & subPlot == 1, "TRUE", juvenile)) |>
+  mutate(species = ifelse(species == "Equ_sp", "Eup_wet", species)) |>
+  mutate(species = ifelse(species == "Fes_sp" & plotID == "Ulv_1_4", "Fes_ovi", species)) |>
+  mutate(species = ifelse(species == "Fes_sp", "Fes_rub", species)) |>
+  mutate(species = ifelse(species == "Gal_sp" & plotID == "Ulv_5_5", "Gal_bor", species)) |>
+  mutate(species = ifelse(species == "Gen_sp", "Gen_niv", species)) |>
+  mutate(species = ifelse(species == "Hyp_sp", "Hyp_mac", species)) |>
+  mutate(species = ifelse(species == "Leo_sp", "Leo_aut", species)) |>
+  mutate(species = ifelse(species == "Oma_sp", "Oma_sup", species)) |>
+  mutate(species = ifelse(species %in% c("Pyr_min", "Pyr_rot"), "Pyr_sp", species)) |>
+  mutate(species = ifelse(species == "Ran_sp", "Ran_pyg", species)) |>
+  mutate(species = ifelse(species == "Rhi_sp", "Rhi_min", species)) |>
+  mutate(species = ifelse(species == "Sag_sp", "Sag_sag", species)) |>
+  filter(!(plotID %in% c("Lav_2_2", "Lav_3_3") & species == "Sal_sp")) |>
+  mutate(species = ifelse(species == "Sal_sp" & plotID == "Gud_5_1", "Sal_lan", species)) |>
+  mutate(species = ifelse(species == "Sel_sp", "Sel_sel", species)) |>
+  mutate(species = ifelse(species == "Tri_sp", "Tri_pra", species)) |>
+  filter(!species == "Vio_sp") |>
+  mutate(value = ifelse(species == "Vio_bif" & plotID == "Ulv_1_5" & year == 2021 & subPlot %in% c(24, 29), "1s", value)) |>
+  mutate(seedling = ifelse(species == "Vio_bif" & plotID == "Ulv_1_5" & year == 2021 & subPlot %in% c(24, 29), "TRUE", seedling)) |>
+  unique()
 
 # ----
 
