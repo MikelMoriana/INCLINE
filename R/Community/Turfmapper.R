@@ -411,3 +411,10 @@ find_plot_year(community_clean_subplot_nr_cf_sp, "Unknown") |> print(n = 21) # A
 turfplot(community_clean_subplot_nr_cf_sp, "Lav_1_3") # The scans says Van_atr, it is Val_atr
 turfplot(community_clean_subplot_nr_cf_sp, "Lav_3_3") # The scans says Suc_vul, it is Suc_pra
 turfplot(community_clean_subplot_nr_cf_sp, "Gud_5_5") # The scans says Fjelljamne, it is Dip_alp
+
+# We correct some last few errors----
+
+turfplot(community_clean_subplot_nr_cf_sp_unknown, "Lav_2_2") # There are a few mistakes in 2021: Ant_alp is actually Alc_alp, the values of Tar_sp belong to Bis_viv, Ver_alp is missing in subplot 1
+# Since all values for Tar_sp are 1, we can create a tibble from the original one, choosing the correct subplots and changing the functional group and species
+
+turfplot(community_clean_subplot_nr_cf_sp_unknown, "Lav_3_3") # Agr_cap missing in subplot 10
