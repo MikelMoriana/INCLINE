@@ -1871,61 +1871,36 @@ vegetation_height_and_moss_depth_mean <- community_clean_soil |>
 community_cleaned <- community_clean_soil |>
   left_join(total_cover, by = c("subPlot","plotID", "year"))|>
   left_join(vegetation_height_and_moss_depth_mean, by = c("plotID", "year")) |>
-  unique() #removing any duplicates from the renaming process (if there was already a Car_big in the subplot and we renamed Car_sp tp Car_big for example)
-
-####______ Making the 3 final datasets that are cleaned and put out in OSF ______#### The subplot dataset still needs work----
-
-community_clean_subplot <- community_cleaned |>
-  filter(measure == "subPlot") |>
-  select("site", "plotID", "warming", "treatment", "year", "date",
-         "recorder", "writer", "subPlot","moss",
-         "lichen", "litter", "rock", "poo", "fungus", "bare_ground",
-         "logger", "vegetation_height_mm", "moss_depth_mm", "functional_group", "species",
-         "value", "presence", "fertile", "dominance", "juvenile", "seedling") |>
-  unique() |> 
+  filter(subPlot != 9) |> 
+  unique() |> #removing any duplicates from the renaming process (if there was already a Car_big in the subplot and we renamed Car_sp tp Car_big for example)
   mutate(subPlot = as.numeric(subPlot, na.rm = TRUE))
-
-community_clean_species_cover <- community_cleaned |>
-  select("site", "plotID", "warming", "treatment", "year", "date",
-         "recorder", "writer", "functional_group", "species",
-         "cover") |>
-  unique()
-
-community_clean_plotlevel_info <- community_cleaned |>
-  filter(subPlot != 9) |>
-  select("site", "plotID", "warming", "treatment", "year", "date",
-         "recorder", "writer", "vegetation_cover", "total_bryophyte_cover",
-         "total_litter_cover", "total_lichen_cover", "total_bare_ground_cover",
-         "total_poo_cover", "total_rock_cover", "total_fungus_cover", "vegetation_height_mean", "moss_depth_mean") |>
-  unique() |>
-  pivot_longer(cols = vegetation_cover:moss_depth_mean, names_to = "name", values_to = "value")
 
 # In a few cases the subplot number is wrong (there shouldn't be anything in subplots 9, 11, 13, 15, 17, 19)----
 
 # We create some data that was missing. Check the turfmapper script for more information
 
-sal_her_skj_6_6_7_2019 <- community_clean_subplot |>
+sal_her_skj_6_6_7_2019 <- community_cleaned |>
   filter(plotID == "Skj_6_6" & year == 2019 & subPlot == 7 & species == "Ant_odo") |>
   mutate(species = "Sal_her",
          functional_group = "Deciduous_shrubs",
          value = "D",
          dominance = "D")
 
-vac_myr_lav_2_6_2021 <- community_clean_subplot |>
+vac_myr_lav_2_6_2021 <- community_cleaned |>
   filter(plotID == "Lav_2_6" & year == 2021 & subPlot %in% c(3, 4, 5, 10, 19, 21, 24, 29, 32) & species == "Agr_cap") |> 
   mutate(species = "Vac_myr",
          functional_group = "Deciduous_shrubs")
 
-agr_cap_lav_5_3_2021 <- community_clean_subplot |>
+agr_cap_lav_5_3_2021 <- community_cleaned |>
   filter(plotID == "Lav_5_3" & year == 2021 & subPlot %in% c(16, 17) & species == "Epi_ana") |> 
   mutate(species = "Agr_cap",
          functional_group = "Graminoids")
 
-nar_str_gud_4_4_18_2021 <- community_clean_subplot |>
+nar_str_gud_4_4_18_2021 <- community_cleaned |>
   filter(plotID == "Gud_4_4" & year == 2021 & subPlot == 18 & species == "Car_big") |> 
   mutate(species = "Nar_str")
 
-tar_sp_ulv_7_2_2022 <- community_clean_subplot |> 
+tar_sp_ulv_7_2_2022 <- community_cleaned |> 
   filter( plotID == "Ulv_7_2" & year == 2022 & subPlot %in% c(10, 12, 16, 17, 18, 24) & species == "Agr_cap") |> 
   mutate(species = "Tar_sp", 
          functional_group = "Forbs") |> 
@@ -1934,7 +1909,7 @@ tar_sp_ulv_7_2_2022 <- community_clean_subplot |>
   mutate(value = ifelse(subPlot == 18, "J", value), 
          juvenile = ifelse(subPlot == 18, TRUE, juvenile))
 
-community_clean_subplot_nr <- community_clean_subplot |> 
+community_nr <- community_cleaned |> 
   filter(!(plotID == "Skj_7_1" & year == 2018 & subPlot == 23)) |> 
   mutate(subPlot = ifelse(plotID == "Skj_3_1" & year == 2019 & subPlot == 13, 14, subPlot), 
          moss = ifelse(plotID == "Skj_3_1" & year == 2019 & subPlot == 14, 70, moss), 
@@ -2277,7 +2252,7 @@ community_clean_subplot_nr <- community_clean_subplot |>
 
 # Some individuals were a bit uncertain (suffix _cf in the file)----
 
-community_clean_subplot_nr_cf <- community_clean_subplot_nr |>
+community_nr_cf <- community_nr |>
   mutate(species = ifelse(species == "Agr_cap_cf", "Agr_cap", species)) |>
   mutate(species = ifelse(species == "Car_cap_cf" & plotID == "Gud_4_3", "Car_fla", species)) |>
   mutate(species = ifelse(species == "Car_cap_cf", "Car_cap", species)) |>
@@ -2294,9 +2269,9 @@ community_clean_subplot_nr_cf <- community_clean_subplot_nr |>
 
 # For some individuals we know the genus but not the species (_sp)----
 
-car_sp_gud_7_2_2018 <- filter(community_clean_subplot_nr_cf, species == "Car_sp" & plotID == "Gud_7_2" & subPlot == 8 & year == 2018) # Create a duplicate
+car_sp_gud_7_2_2018 <- filter(community_nr_cf, species == "Car_sp" & plotID == "Gud_7_2" & subPlot == 8 & year == 2018) # Create a duplicate
 
-community_clean_subplot_nr_cf_sp <- community_clean_subplot_nr_cf |> 
+community_nr_cf_sp <- community_nr_cf |> 
   filter(species != "Ant_sp") |> 
   mutate(species = ifelse(species == "Car_sp" & plotID == "Gud_1_2" & year == 2018, "Car_vag", species)) |> 
   filter(!(species == "Car_sp" & plotID == "Gud_1_2")) |>
@@ -2369,7 +2344,7 @@ community_clean_subplot_nr_cf_sp <- community_clean_subplot_nr_cf |>
 
 # For some individuals we do not know the species----
 
-community_clean_subplot_nr_cf_sp_unknown <- community_clean_subplot_nr_cf_sp |>
+community_nr_cf_sp_unknown <- community_nr_cf_sp |>
   mutate(species = ifelse(species == "Ver_cha_eller_Hyp_mac", "Hyp_mac", species)) |>
   mutate(species = ifelse(species == "Unknown" & plotID == "Lav_1_3" & year == 2021, "Val_atr", species)) |>
   mutate(species = ifelse(species == "Unknown" & plotID == "Lav_3_3" & year == 2021, "Suc_pra", species)) |>
@@ -2379,33 +2354,58 @@ community_clean_subplot_nr_cf_sp_unknown <- community_clean_subplot_nr_cf_sp |>
 
 # We correct some last few errors----
 
-tar_sp_lav_2_2_2021 <- community_clean_subplot_nr_cf_sp_unknown |>
+tar_sp_lav_2_2_2021 <- community_nr_cf_sp_unknown |>
   filter(plotID == "Lav_2_2" & year == 2021 & subPlot %in% c(8, 10, 19, 20, 26, 32, 33) & value == 1) |>
   mutate(functional_group = "Forbs") |>
   mutate(species = "Tar_sp") |>
   unique()
-ver_alp_lav_2_2_2021 <- community_clean_subplot_nr_cf_sp_unknown |>
+ver_alp_lav_2_2_2021 <- community_nr_cf_sp_unknown |>
   filter(plotID == "Lav_2_2" & year == 2021 & subPlot == 1 & functional_group == "Forbs" & value == 1) |>
   mutate(species = "Ver_alp") |>
   unique()
 
-agr_cap_lav_3_3_2021 <- community_clean_subplot_nr_cf_sp_unknown |>
+agr_cap_lav_3_3_2021 <- community_nr_cf_sp_unknown |>
   filter(plotID == "Lav_3_3" & year == 2021 & subPlot == 10 & functional_group == "Graminoids" & value == 1) |>
   mutate(species = "Agr_cap")
 
-community_subplot_fixed <- community_clean_subplot_nr_cf_sp_unknown |>
+community_fixed <- community_nr_cf_sp_unknown |>
   mutate(species = ifelse(species == "Ant_alp" & plotID == "Lav_2_2", "Alc_alp", species)) |>
   filter(!(species == "Tar_sp" & plotID == "Lav_2_2" & year == 2021)) |>
   bind_rows(tar_sp_lav_2_2_2021) |>
   bind_rows(ver_alp_lav_2_2_2021) |>
   bind_rows(agr_cap_lav_3_3_2021)
 
-# Saving the files----
+####______ Making the 3 final datasets that are cleaned and put out in OSF ______#### The subplot dataset still needs work----
+
+community_clean_subplot <- community_fixed |>
+  filter(measure == "subPlot") |>
+  select("site", "plotID", "warming", "treatment", "year", "date",
+         "recorder", "writer", "subPlot","moss",
+         "lichen", "litter", "rock", "poo", "fungus", "bare_ground",
+         "logger", "vegetation_height_mm", "moss_depth_mm", "functional_group", "species",
+         "value", "presence", "fertile", "dominance", "juvenile", "seedling") |>
+  unique() |> 
+  mutate(subPlot = as.numeric(subPlot, na.rm = TRUE))
+
+community_clean_species_cover <- community_fixed |>
+  select("site", "plotID", "warming", "treatment", "year", "date",
+         "recorder", "writer", "functional_group", "species",
+         "cover") |>
+  unique()
+
+community_clean_plotlevel_info <- community_fixed |>
+  filter(subPlot != 9) |>
+  select("site", "plotID", "warming", "treatment", "year", "date",
+         "recorder", "writer", "vegetation_cover", "total_bryophyte_cover",
+         "total_litter_cover", "total_lichen_cover", "total_bare_ground_cover",
+         "total_poo_cover", "total_rock_cover", "total_fungus_cover", "vegetation_height_mean", "moss_depth_mean") |>
+  unique() |>
+  pivot_longer(cols = vegetation_cover:moss_depth_mean, names_to = "name", values_to = "value")
 
 ifelse(!dir.exists("data_cleaned"), dir.create("data_cleaned"), FALSE)
 write.csv(community_clean_species_cover, file = "data_cleaned/INCLINE_community_species_cover_fixed.csv", row.names= FALSE)
 
-write.csv(community_subplot_fixed, file = "data_cleaned/INCLINE_community_subplot_fixed.csv", row.names= FALSE)
+write.csv(community_clean_subplot, file = "data_cleaned/INCLINE_community_subplot_fixed.csv", row.names= FALSE)
 
 write.csv(community_clean_plotlevel_info, file = "data_cleaned/INCLINE_community_plotlevel_info_fixed.csv", row.names= FALSE)
 
