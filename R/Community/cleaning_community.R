@@ -1873,7 +1873,7 @@ community_cleaned <- community_clean_soil |>
   left_join(vegetation_height_and_moss_depth_mean, by = c("plotID", "year")) |>
   unique() #removing any duplicates from the renaming process (if there was already a Car_big in the subplot and we renamed Car_sp tp Car_big for example)
 
-####______ Making the 3 final datasets that are cleaned and put out in OSF ______####
+####______ Making the 3 final datasets that are cleaned and put out in OSF ______#### The subplot dataset still needs work----
 
 community_clean_subplot <- community_cleaned |>
   filter(measure == "subPlot") |>
