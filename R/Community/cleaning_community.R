@@ -219,8 +219,10 @@ cover_column <- community_data_longer_status|>
   mutate(cover = ifelse(cover == 0.1, 1, cover))|>
   mutate(cover = ifelse(cover == 0.5, 1, cover))|>
   mutate(cover = ifelse(cover == 0 & species == "Hyp_mac" & site == "Ulvehaugen" & year == 2019 & block == 7 & plot == 3, 1, cover)) |>
-  mutate(cover = ifelse(cover == "5, 7", NA_real_, cover)) |> #Changing non numeric values to NA, needs to be checked when proofreading later
-  mutate(cover = ifelse(cover == "?", NA_real_, cover)) |> #Check all the insidences of this, and they should all be NA.
+  mutate(cover = ifelse(cover == "5, 7", 5, cover)) |> #We're missing the scan. But due to the abundance of this plant it has to be at least 5 cover
+  mutate(cover = ifelse(cover == "?" & species == "Vio_bif", 5, cover)) |> # It wasn't written on the paper. Estimation by looking at number of subplots it's present in, and the species' cover in other plots in the same block and in other years
+  mutate(cover = ifelse(cover == "?" & species == "Alc_sp", 1, cover)) |> # It wasn't readable on the paper. Estimation by looking at number of subplots it's present in, and the species' cover in other plots in the same block and in other years
+  mutate(cover = ifelse(cover == "?" & species == "Ver_alp", 3, cover)) |> # It wasn't readable on the paper. Estimation by looking at number of subplots it's present in, and the species' cover in other plots in the same block and in other years
   mutate(cover = ifelse(cover == "1+1*", 1, cover)) |> #Two Car_sp in this plot. Should be 1 for each of them
   mutate(cover = as.integer(cover))
 
@@ -261,7 +263,8 @@ community_clean_species <- community_clean |>
   mutate(species = ifelse(species == "Emp_her", "Emp_nig", species))|>
   mutate(species = ifelse(species == "Hup_sel", "Hyp_sel", species))|>
   mutate(species = ifelse(species == "Gen_ana", "Gen_ama", species))|>
-  mutate(species = ifelse(species == "Lyc_lyc", "Sel_sel", species))
+  mutate(species = ifelse(species == "Lyc_lyc", "Sel_sel", species)) |> 
+  mutate(species = ifelse(species == "Gen_riv", "Gen_niv", species))
 
 
 #Plot and year specific changes based on evaluation from turfmapper#
@@ -1431,7 +1434,6 @@ community_clean_skj_gud_lav <- community_clean_skj_gud |>
   mutate(species = ifelse(species == "Fes_rub_cf_kanskje_Ave_fle" & plotID == "Lav_3_1", "Ave_fle", species))|>
   mutate(cover = ifelse(species == "Ave_fle" & plotID == "Lav_3_1" & year == 2021,2,cover))|>
   mutate(species = ifelse(species == "Car_sp" & plotID == "Lav_3_1", "Car_cap", species))|>
-  
   mutate(species = ifelse(species == "Car_nor" & plotID == "Lav_3_3" & year == 2021, "Car_big", species))|>
   mutate(cover = ifelse(species == "Car_big" & plotID == "Lav_3_3" & year == 2021, 6, cover))|>
   mutate(species = ifelse(species == "Car_sp" & plotID == "Lav_3_3" & year == 2023, "Car_big", species))|>
@@ -1530,6 +1532,7 @@ community_clean_skj_gud_lav <- community_clean_skj_gud |>
   mutate(cover = ifelse(species == "Agr_mer" & plotID == "Lav_6_2" & year == 2018, 2, cover))|>
   mutate(species = ifelse(species == "Alc_sp_cf" & plotID == "Lav_6_2", "Alc_sp", species))|>
   mutate(species = ifelse(species %in% c("Car_cap", "Car_sp") & plotID == "Lav_6_2", "Car_nor", species ))|>
+  mutate(species = ifelse(species == "Hup_app" & plotID == "Lav_6_2", "Hyp_sel", species)) |> # Earlier called Hyp_sel, even though it was probably Hup_app
   mutate(species = ifelse(species == "Car_nor_cf" & plotID == "Lav_6_3", "Car_nor", species))|>
   mutate(species = ifelse(species == "Car_sp_den_lyse" & plotID == "Lav_6_3", "Car_nor", species))|>
   mutate(cover = ifelse(species == "Alc_sp" & plotID == "Lav_6_5" & year == 2022, 1, cover))|>
@@ -1656,6 +1659,7 @@ community_clean_skj_gud_lav_ulv <- community_clean_skj_gud_lav |>
   mutate(species = ifelse(species == "Epi_sp" & plotID == "Ulv_3_5", "Epi_ana", species))|>
   mutate(species = ifelse(species == "Hie_sp" & plotID == "Ulv_3_5", "Hie_pil",species))|>
   mutate(species = ifelse(species == "Leo_sp" & plotID == "Ulv_3_5", "Leo_aut", species))|>
+  mutate(species = ifelse(species == "Leo_sp" & plotID == "Ulv_6_1", "Leo_aut", species))|>
   mutate(species = ifelse(species %in% c("Car_big_cf", "Car_sp") & plotID == "Ulv_4_1", "Car_big", species))|>
   mutate(cover = ifelse(species == "Car_big" & plotID == "Ulv_4_1" & year == 2019, 4, cover))|>
   mutate(cover = ifelse(species == "Car_big" & plotID == "Ulv_4_1" & year == 2021, 4, cover))|>
@@ -1780,10 +1784,10 @@ community_clean_unique <- community_clean_skj_gud_lav_ulv_7_3 |>
 
 ##### Adding information about total % of different functional groups #####
 community_clean_functional <- community_clean_unique|>
-  mutate(functional_group = case_when(species %in% c("Ant_dio", "Ant_sp", "Eup_wet", "Sib_pro", "Alc_alp", "Alc_sp", "Oma_sup", "Ver_alp", "Vio_pal", "Cam_rot", "Sag_sag", "Leo_aut", "Sel_sel", "Pyr_sp", "Luz_mul", "Tar_sp", "Pot_cra", "Dip_alp", "Tha_alp", "Lys_eur", "Hie_alp", "Rum_ace", "Cer_cer", "Epi_ana", "Equ_arv", "Epi_sp", "Tof_pus", "Nid_seedling", "Bar_alp", "Sil_aca", "Par_pal", "Hie_alp", "Cer_fon", "Pot_ere", "Vio_bif", "Coel_vir", "Ran_acr", "Gen_niv", "Pin_vul", "Eri_sp", "Ach_mil", "Pyr_min", "Bis_viv", "Ast_alp", "Rum_acl", "Bot_lun", "Gen_ama", "Ran_sp", "Oxy_dig", "Fern", "Ger_syl", "Geu_riv", "Rhi_min", "Hie_sp", "Tri_ces", "Hyp_sel", "Sol_vir", "Vio_can", "Ort_sec", "Pru_vul", "Ver_off", "Suc_pra", "Hyp_mac", "Ran_pyg", "Dry_oct", "Luz_spi", "Tri_rep", "Hyp_sp", "Ste_gra", "Sel_sp", "Vio_tri", "Ver_cha", "Gen_sp", "Tri_sp", "Oma_sp", "Cer_alp", "Tri_pra", "Sil_vul", "Sag_sp", "Phe_con", "Gym_dry", "Oma_nor", "Gal_sp", "Gen_cam", "Oxa_ace", "Lot_cor", "Aco_sep", "Eri_uni", "Equ_sci", "Sau_alp", "Leu_vul", "Hie_pil", "Vio_sp", "Gal_bor", "Lyc_alp") ~ "Forbs",
-                                      species %in% c("Ant_odo", "Nar_str", "Agr_mer", "Agr_cap", "Car_big", "Car_nor", "Car_cap", "Car_pal", "Car_pil", "Poa_pra", "Car_vag", "Ave_fle", "Des_ces", "Poa_alp", "Jun_tri", "Phl_alp", "Fes_ovi", "Fes_rub", "Sau_alp", "Fes_sp" ,"Car_sp", "Fes_viv", "Des_alp", "Car_fla", "Car_sax", "Car_atr" ) ~ "Graminoids",
+  mutate(functional_group = case_when(species %in% c("Ant_dio", "Ant_sp", "Eup_wet", "Sib_pro", "Alc_alp", "Alc_sp", "Oma_sup", "Ver_alp", "Vio_pal", "Cam_rot", "Sag_sag", "Leo_aut", "Sel_sel", "Pyr_sp", "Luz_mul", "Tar_sp", "Pot_cra", "Dip_alp", "Tha_alp", "Lys_eur", "Hie_alp", "Rum_ace", "Cer_cer", "Epi_ana", "Equ_arv", "Epi_sp", "Tof_pus", "Nid_seedling", "Bar_alp", "Sil_aca", "Par_pal", "Hie_alp", "Cer_fon", "Pot_ere", "Vio_bif", "Coel_vir", "Ran_acr", "Gen_niv", "Pin_vul", "Eri_sp", "Ach_mil", "Pyr_min", "Bis_viv", "Ast_alp", "Rum_acl", "Bot_lun", "Gen_ama", "Ran_sp", "Oxy_dig", "Fern", "Ger_syl", "Geu_riv", "Rhi_min", "Hie_sp", "Tri_ces", "Hyp_sel", "Sol_vir", "Vio_can", "Ort_sec", "Pru_vul", "Ver_off", "Suc_pra", "Hyp_mac", "Ran_pyg", "Dry_oct", "Luz_spi", "Tri_rep", "Hyp_sp", "Ste_gra", "Sel_sp", "Vio_tri", "Ver_cha", "Gen_sp", "Tri_sp", "Oma_sp", "Cer_alp", "Tri_pra", "Sil_vul", "Sag_sp", "Phe_con", "Gym_dry", "Oma_nor", "Gal_sp", "Gen_cam", "Oxa_ace", "Lot_cor", "Aco_sep", "Eri_uni", "Equ_sci", "Sau_alp", "Leu_vul", "Hie_pil", "Vio_sp", "Gal_bor", "Lyc_alp", "Ane_nem", "Dac_vir", "Eri_bor", "Hie_vul", "Pyr_rot", "Ran_aur") ~ "Forbs",
+                                      species %in% c("Ant_odo", "Nar_str", "Agr_mer", "Agr_cap", "Car_big", "Car_nor", "Car_cap", "Car_pal", "Car_pil", "Poa_pra", "Car_vag", "Ave_fle", "Des_ces", "Poa_alp", "Jun_tri", "Phl_alp", "Fes_ovi", "Fes_rub", "Sau_alp", "Fes_sp" ,"Car_sp", "Fes_viv", "Des_alp", "Car_fla", "Car_sax", "Car_atr", "Ant_alp", "Car_lac", "Car_nig", "Tri_spi", "Val_atr") ~ "Graminoids",
                                       species %in% c("Sal_her", "Vac_myr", "Vac_uli", "Sal_sp", "Bet_nan", "Bet_pub", "Sal_lan") ~"Deciduous_shrubs",
-                                      species %in% c("Emp_nig", "Vac_vit", "Cal_vul", "Arc_urc") ~ "Evergreen_shrubs")) |>
+                                      species %in% c("Emp_nig", "Vac_vit", "Cal_vul", "Arc_urv", "Pin_syl") ~ "Evergreen_shrubs")) |>
   group_by(plotID, year) |>
   mutate(recorder = paste(unique(recorder), collapse = " & "),
          writer = paste(unique(writer), collapse = " & ")) |>
@@ -1799,6 +1803,7 @@ community_clean_functional <- community_clean_unique|>
   mutate(
     date = min(date)) #If data collection was done over several days pick the first date.
 
+missing_functional <- community_clean_functional |> filter(is.na(functional_group)) |> arrange(species) |> select(plotID, year, species, value, functional_group)
 
 community_clean_soil <- community_clean_functional|>
   mutate(bare_ground = soil) |>
@@ -2253,18 +2258,25 @@ community_nr <- community_cleaned |>
 # Some individuals were a bit uncertain (suffix _cf in the file)----
 
 community_nr_cf <- community_nr |>
-  mutate(species = ifelse(species == "Agr_cap_cf", "Agr_cap", species)) |>
-  mutate(species = ifelse(species == "Car_cap_cf" & plotID == "Gud_4_3", "Car_fla", species)) |>
-  mutate(species = ifelse(species == "Car_cap_cf", "Car_cap", species)) |>
-  mutate(species = ifelse(species == "Car_nig_cf", "Car_big", species)) |>
-  mutate(species = ifelse(species == "Car_nor_cf" & plotID == "Lav_3_3", "Car_nor", species)) |>
-  mutate(species = ifelse(species == "Car_nor_cf" & plotID == "Skj_1_1", "Car_cap", species)) |>
-  mutate(species = ifelse(species == "Epi_ana_cf", "Epi_ana", species)) |>
+  mutate(species = ifelse(species == "Agr_cap_cf", "Agr_cap", species),
+         functional_group = ifelse(species == "Agr_cap", "Graminoids", functional_group)) |>
+  mutate(species = ifelse(species == "Car_cap_cf" & plotID == "Gud_4_3", "Car_fla", species),
+         functional_group = ifelse(species == "Car_fla", "Graminoids", functional_group)) |>
+  mutate(species = ifelse(species == "Car_cap_cf", "Car_cap", species),
+         functional_group = ifelse(species == "Car_cap", "Graminoids", functional_group)) |>
+  mutate(species = ifelse(species == "Car_nig_cf", "Car_big", species),
+         functional_group = ifelse(species == "Car_big", "Graminoids", functional_group)) |>
+  mutate(species = ifelse(species == "Car_nor_cf" & plotID == "Lav_3_3", "Car_nor", species),
+         functional_group = ifelse(species == "Car_nor", "Graminoids", functional_group)) |>
+  mutate(species = ifelse(species == "Car_nor_cf" & plotID == "Skj_1_1", "Car_cap", species),
+         functional_group = ifelse(species == "Car_cap", "Graminoids", functional_group)) |>
+  mutate(species = ifelse(species == "Epi_ana_cf", "Epi_ana", species),
+         functional_group = ifelse(species == "Epi_ana", "Forbs", functional_group)) |>
   filter(!(species == "Ran_acr_cf")) |>
   filter(!(species == "Ran_acr" & plotID == "Gud_2_2")) |>
   filter(!(species == "Vio_can_cf" & plotID == "Ulv_7_4")) |>
-  mutate(value = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, "1j", value)) |>
-  mutate(juvenile = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, TRUE, juvenile)) |>
+  mutate(value = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, "1j", value),
+         juvenile = ifelse(species == "Vio_bif" & plotID == "Ulv_7_4" & subPlot == 30 & year == 2023, TRUE, juvenile)) |>
   unique()
 
 # For some individuals we know the genus but not the species (_sp)----
@@ -2321,7 +2333,8 @@ community_nr_cf_sp <- community_nr_cf |>
   filter(!(plotID %in% c("Gud_1_5", "Skj_3_4") & species == "Epi_sp")) |>
   mutate(value = ifelse(species == "Ver_alp" & plotID == "Skj_3_4" & year == 2021 & subPlot == 1, "1J", value)) |>
   mutate(juvenile = ifelse(species == "Ver_alp" & plotID == "Skj_3_4" & year == 2021 & subPlot == 1, TRUE, juvenile)) |>
-  mutate(species = ifelse(species == "Equ_sp", "Eup_wet", species)) |>
+  mutate(species = ifelse(species == "Equ_sp", "Eup_wet", species),
+         functional_group = ifelse(species == "Eup_wet", "Forbs", functional_group)) |>
   mutate(species = ifelse(species == "Fes_sp" & plotID == "Ulv_1_4", "Fes_ovi", species)) |>
   mutate(species = ifelse(species == "Fes_sp", "Fes_rub", species)) |>
   mutate(species = ifelse(species == "Gal_sp" & plotID == "Ulv_5_5", "Gal_bor", species)) |>
@@ -2331,7 +2344,8 @@ community_nr_cf_sp <- community_nr_cf |>
   mutate(species = ifelse(species == "Oma_sp", "Oma_sup", species)) |>
   mutate(species = ifelse(species %in% c("Pyr_min", "Pyr_rot"), "Pyr_sp", species)) |>
   mutate(species = ifelse(species == "Ran_sp", "Ran_pyg", species)) |>
-  mutate(species = ifelse(species == "Rhi_sp", "Rhi_min", species)) |>
+  mutate(species = ifelse(species == "Rhi_sp", "Rhi_min", species),
+         functional_group = ifelse(species == "Rhi_min", "Forbs", functional_group)) |>
   mutate(species = ifelse(species == "Sag_sp", "Sag_sag", species)) |>
   filter(!(plotID %in% c("Lav_2_2", "Lav_3_3") & species == "Sal_sp")) |>
   mutate(species = ifelse(species == "Sal_sp" & plotID == "Gud_5_1", "Sal_lan", species)) |>
@@ -2345,10 +2359,14 @@ community_nr_cf_sp <- community_nr_cf |>
 # For some individuals we do not know the species----
 
 community_nr_cf_sp_unknown <- community_nr_cf_sp |>
-  mutate(species = ifelse(species == "Ver_cha_eller_Hyp_mac", "Hyp_mac", species)) |>
-  mutate(species = ifelse(species == "Unknown" & plotID == "Lav_1_3" & year == 2021, "Val_atr", species)) |>
-  mutate(species = ifelse(species == "Unknown" & plotID == "Lav_3_3" & year == 2021, "Suc_pra", species)) |>
-  mutate(species = ifelse(species == "Unknown" & plotID == "Gud_5_5" & year == 2021, "Dip_alp", species)) |>
+  mutate(species = ifelse(species == "Ver_cha_eller_Hyp_mac", "Hyp_mac", species),
+         functional_group = ifelse(species == "Hyp_mac", "Forbs", functional_group)) |>
+  mutate(species = ifelse(species == "Unknown" & plotID == "Lav_1_3" & year == 2021, "Val_atr", species),
+         functional_group = ifelse(species == "Val_atr", "Graminoids", functional_group)) |>
+  mutate(species = ifelse(species == "Unknown" & plotID == "Lav_3_3" & year == 2021, "Suc_pra", species),
+         functional_group = ifelse(species == "Suc_pra", "Forbs", functional_group)) |>
+  mutate(species = ifelse(species == "Unknown" & plotID == "Gud_5_5" & year == 2021, "Dip_alp", species),
+         functional_group = ifelse(species == "Dip_alp", "Forbs", functional_group)) |>
   filter(!(species %in% c("Nid_juvenile", "Nid_seedling", "Poaceae_sp", "Unknown"))) |>
   unique()
 
